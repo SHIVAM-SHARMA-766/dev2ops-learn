@@ -1,0 +1,80 @@
+title: PID 1, signals & graceful shutdown
+summary: Why your container ignores Ctrl-C and takes 10 seconds to die.
+minutes: 8
+difficulty: intermediate
+order: 3
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: "# shell form — your app is NOT PID 1"
+      out: |
+        CMD npm start
+        → runs: /bin/sh -c "npm start"
+        → PID 1 is sh; it ignores SIGTERM. docker stop waits 10s, then SIGKILL 💀
+    - cmd: "# exec form — your app IS PID 1"
+      out: |
+        CMD ["node", "server.js"]
+        → PID 1 is node; SIGTERM reaches it directly → clean shutdown ✓
+    - cmd: "# handle the signal in your app"
+      out: |
+        process.on("SIGTERM", () => server.close(() => process.exit(0)))
+    - cmd: docker run --init myapp
+      out: |
+        (--init adds a tiny init as PID 1 that reaps zombies & forwards signals)
+
+steps:
+  - kind: CONCEPT
+    title: Something is always PID 1
+    label: PID 1
+    body: >
+      The first process in a container's PID namespace is **PID 1** — the init
+      process. It has special duties: it must handle signals and reap orphaned
+      child processes. Most apps aren't written to do that.
+
+  - kind: PROBLEM
+    title: Shell form hides your app
+    label: Shell form
+    body: >
+      `CMD npm start` actually runs `/bin/sh -c "npm start"`. Now **sh** is PID 1,
+      and sh doesn't forward `SIGTERM`. `docker stop` waits 10 seconds for nothing,
+      then `SIGKILL`s everything — mid-request, no cleanup.
+    callout:
+      kind: SYMPTOM
+      text: "“My container takes 10 seconds to stop” is almost always this."
+
+  - kind: CONCEPT
+    title: Exec form puts your app first
+    label: Exec form
+    body: >
+      Use the JSON exec form: `CMD ["node", "server.js"]`. Now your app **is**
+      PID 1, so `SIGTERM` reaches it directly and you can shut down cleanly.
+
+  - kind: CONCEPT
+    title: Handle the signal, or add --init
+    label: Graceful
+    body: >
+      Catch `SIGTERM` in your app to finish in-flight requests and close
+      connections. If your process spawns children (and might leave zombies), run
+      with `--init` (or `tini`) to get a proper init as PID 1.
+    callout:
+      kind: CHECKLIST
+      text: exec-form CMD · handle SIGTERM · `--init` if you fork children · a sane stop timeout.
+
+quiz:
+  - question: Why does `CMD npm start` make `docker stop` slow?
+    options:
+      - npm is slow
+      - sh becomes PID 1 and doesn't forward SIGTERM, so stop waits then SIGKILLs
+      - The image is too big
+      - Missing healthcheck
+    answer: 1
+    explanation: Shell form makes sh PID 1; it ignores SIGTERM, so Docker waits the grace period and force-kills.
+  - question: What does `docker run --init` provide?
+    options:
+      - A faster start
+      - A tiny init as PID 1 that reaps zombies and forwards signals
+      - A volume
+      - A healthcheck
+    answer: 1
+    explanation: "--init runs a minimal init process as PID 1, handling signal forwarding and zombie reaping."

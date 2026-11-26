@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import '../styles/player.css';
 import { Scene } from './widgets/index.jsx';
 import { Markdown } from './md.jsx';
-import { isLessonDone, markLessonDone, setLast } from './progress.js';
+import { isLessonDone, markLessonDone, setLast, getStepAt, setStepAt } from './progress.js';
 import { confetti } from './celebrate.js';
 
 export default function StepPlayer({ course, tree, lesson, prev, next }) {
@@ -30,7 +30,19 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
     }
     setDone(map);
     setLast(course.slug, `/${course.slug}/${lesson.chapter}/${lesson.slug}`, lesson.title, course.title);
-  }, [course.slug, course.title, lesson.chapter, lesson.slug, lesson.title, tree]);
+    // resume at the step the learner left on (if mid-lesson)
+    const saved = getStepAt(course.slug, lesson.chapter, lesson.slug);
+    if (saved > 0 && saved < total - 1) {
+      setStep(saved);
+      setToast(`Resumed at step ${saved + 1} · press ← to go back`);
+      setTimeout(() => setToast(null), 2600);
+    }
+  }, [course.slug, course.title, lesson.chapter, lesson.slug, lesson.title, tree, total]);
+
+  // remember the current step for next time
+  useEffect(() => {
+    setStepAt(course.slug, lesson.chapter, lesson.slug, step);
+  }, [step, course.slug, lesson.chapter, lesson.slug]);
 
   // reaching the final step completes the lesson — celebrate the first time
   useEffect(() => {

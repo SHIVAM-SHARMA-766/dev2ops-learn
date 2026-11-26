@@ -51,6 +51,21 @@ export function completedCount(course) {
   return Object.keys(p.completed).length;
 }
 
+/** Remember / recall the step a learner was on within a lesson. */
+export function setStepAt(course, chapter, lesson, idx) {
+  const all = readAll();
+  const cp = all[course] || { completed: {}, last: null };
+  cp.stepAt = cp.stepAt || {};
+  cp.stepAt[`${chapter}/${lesson}`] = idx;
+  all[course] = cp;
+  writeAll(all);
+}
+
+export function getStepAt(course, chapter, lesson) {
+  const cp = getCourseProgress(course);
+  return (cp.stepAt && cp.stepAt[`${chapter}/${lesson}`]) ?? 0;
+}
+
 /** Most recently opened lesson across all courses, or null. */
 export function getResume() {
   const all = readAll();

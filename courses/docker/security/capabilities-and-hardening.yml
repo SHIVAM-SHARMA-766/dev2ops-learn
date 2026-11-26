@@ -1,0 +1,81 @@
+title: Lock a container down
+summary: Drop capabilities, go read-only, and stop privilege escalation.
+minutes: 8
+difficulty: advanced
+order: 4
+
+scene:
+  widget: stagedReveal
+  caption: Each flag removes something an attacker could use.
+  items:
+    - label: --cap-drop ALL
+      note: Remove every Linux capability, then add back only what you need.
+      tag: caps
+    - label: --cap-add NET_BIND_SERVICE
+      note: Grant just the one capability the app actually requires.
+      tag: caps
+    - label: --security-opt no-new-privileges
+      note: Block setuid tricks — a process can't gain more privilege than it started with.
+      tag: escalation
+    - label: --read-only  (+ --tmpfs /tmp)
+      note: Immutable filesystem; writes only where you explicitly allow.
+      tag: filesystem
+    - label: --user 1001  (non-root)
+      note: Run as an unprivileged user — the baseline for all of the above.
+      tag: user
+
+steps:
+  - kind: CONCEPT
+    title: Containers get too many powers
+    label: Capabilities
+    body: >
+      Linux splits root's power into **capabilities** (bind low ports, change
+      ownership, load modules…). By default Docker grants a container a broad set
+      it almost never needs.
+
+  - kind: CONCEPT
+    title: Drop all, add back a few
+    label: cap-drop
+    body: >
+      `--cap-drop ALL` strips every capability, then `--cap-add` grants back only
+      what's required (e.g. `NET_BIND_SERVICE` to bind port 80). Least privilege,
+      applied to the kernel powers themselves.
+    callout:
+      kind: KEY IDEA
+      text: Start from zero capabilities and add the minimum — not the other way round.
+
+  - kind: CONCEPT
+    title: Stop privilege escalation
+    label: no-new-privileges
+    body: >
+      `--security-opt no-new-privileges` prevents a process from gaining **more**
+      privilege via setuid binaries. A compromised app can't level itself up.
+
+  - kind: CONCEPT
+    title: Immutable filesystem
+    label: read-only
+    body: >
+      `--read-only` makes the container filesystem unwritable; mount a small
+      `--tmpfs /tmp` for the few paths that need to be. Malware can't drop files
+      or modify binaries.
+    callout:
+      kind: AVOID
+      text: Never use `--privileged` in production — it hands the container the keys to the host.
+
+quiz:
+  - question: What's the recommended way to handle capabilities?
+    options:
+      - Add --privileged
+      - Drop ALL, then add back only the ones you need
+      - Leave the defaults
+      - Add every capability
+    answer: 1
+    explanation: Least privilege — start from none and grant only the specific capabilities required.
+  - question: What does `no-new-privileges` prevent?
+    options:
+      - Networking
+      - A process escalating privilege via setuid binaries
+      - Writing to volumes
+      - Pulling images
+    answer: 1
+    explanation: It blocks privilege escalation, so a compromised process can't gain more rights than it began with.

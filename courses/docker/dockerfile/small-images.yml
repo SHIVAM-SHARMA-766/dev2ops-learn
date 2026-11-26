@@ -1,0 +1,86 @@
+title: Make images tiny
+summary: slim, alpine, distroless, scratch — how small can you go?
+minutes: 8
+difficulty: intermediate
+order: 8
+
+scene:
+  widget: compare
+  left:
+    title: Bigger & friendlier
+    items:
+      - "node:20 — full Debian, ~1GB"
+      - "node:20-slim — trimmed Debian, ~200MB"
+      - Has a shell, package manager, tools
+      - Easy to debug (exec in and poke)
+      - More packages = more CVEs
+  right:
+    title: Smaller & stricter
+    items:
+      - "node:20-alpine — musl libc, ~130MB"
+      - "distroless — just runtime, no shell"
+      - "scratch — literally empty"
+      - Tiny attack surface, fewer CVEs
+      - Harder to debug (no shell inside)
+  highlight:
+    - [0, 1]
+    - [0, 1, 2]
+    - [3, 4]
+    - [3, 4]
+
+steps:
+  - kind: CONCEPT
+    title: Size is attack surface
+    label: Why small
+    body: >
+      A smaller image pulls faster, costs less to store, and — more importantly —
+      contains fewer packages, so there's **less to have a CVE**. Shrinking images
+      is a security win, not just a tidiness one.
+
+  - kind: CONCEPT
+    title: slim and alpine
+    label: slim/alpine
+    body: >
+      `-slim` tags drop docs and extras from Debian. `-alpine` uses tiny Alpine
+      Linux (musl libc) — much smaller, but musl can trip up some native
+      dependencies, so test.
+    callout:
+      kind: GOTCHA
+      text: Alpine uses musl, not glibc. Some prebuilt binaries / native modules need extra care.
+
+  - kind: CONCEPT
+    title: distroless — runtime only
+    label: distroless
+    body: >
+      **distroless** images contain just your language runtime and your app — no
+      shell, no package manager. Pair with a multi-stage build: build in a full
+      image, copy the result into distroless.
+
+  - kind: CONCEPT
+    title: scratch — nothing at all
+    label: scratch
+    body: >
+      For a static binary (Go, Rust), `FROM scratch` gives an **empty** base —
+      your binary is the whole image. Can't get smaller. Can't `exec` in either,
+      so debug elsewhere.
+    callout:
+      kind: TRADE-OFF
+      text: Smaller = safer + faster, but harder to debug. Distroless is a great middle ground.
+
+quiz:
+  - question: Why is a smaller base image a security benefit?
+    options:
+      - It encrypts the app
+      - Fewer packages means a smaller attack surface and fewer CVEs
+      - It runs as non-root automatically
+      - It signs the image
+    answer: 1
+    explanation: Less software in the image = less that can have a vulnerability.
+  - question: What's notable about a distroless (or scratch) image for debugging?
+    options:
+      - It has extra tools
+      - It has no shell, so you can't `docker exec` a shell into it
+      - It can't run apps
+      - It's read-only
+    answer: 1
+    explanation: No shell/package manager means debugging must happen outside the running container.

@@ -1,0 +1,77 @@
+title: Build many images with bake
+summary: Declare your builds in a file and run them all with one command.
+minutes: 7
+difficulty: advanced
+order: 3
+
+scene:
+  widget: codeWalk
+  filename: docker-bake.hcl
+  lines:
+    - "group \"default\" {"
+    - "  targets = [\"api\", \"web\"]"
+    - "}"
+    - ""
+    - "target \"api\" {"
+    - "  context    = \"./api\""
+    - "  tags       = [\"myorg/api:latest\"]"
+    - "  platforms  = [\"linux/amd64\", \"linux/arm64\"]"
+    - "}"
+    - ""
+    - "target \"web\" {"
+    - "  context = \"./web\""
+    - "  tags    = [\"myorg/web:latest\"]"
+    - "}"
+  highlights:
+    - [0, 1, 2]
+    - [4, 5, 6]
+    - [7]
+    - [10, 11, 12, 13]
+
+steps:
+  - kind: PROBLEM
+    title: Many images, many commands
+    label: The problem
+    body: >
+      A real repo often builds several images — an API, a web app, a worker — each
+      with its own tags and platforms. Scripting a pile of `docker buildx build`
+      commands gets messy fast.
+
+  - kind: CONCEPT
+    title: Declare builds in a file
+    label: bake file
+    body: >
+      `docker-bake.hcl` describes your builds **declaratively**: targets with
+      their context, tags and options. It's your build config, in version control,
+      instead of a shell script.
+
+  - kind: CONCEPT
+    title: Group and share settings
+    label: group
+    body: >
+      A `group` runs several targets together. Targets can inherit shared settings,
+      so common options (platforms, labels, cache) live in one place.
+    callout:
+      kind: KEY IDEA
+      text: Each target can set its own platforms — multi-arch for the API, single-arch for the web, in one file.
+
+  - kind: CONCEPT
+    title: Build it all at once
+    label: bake
+    body: >
+      `docker buildx bake` builds **every** target — in parallel, with a shared
+      cache. `docker buildx bake api` builds just one. One command, reproducible,
+      CI-friendly.
+    callout:
+      kind: TIP
+      text: Bake reads variables and `--set` overrides, so CI can inject tags/registries without editing the file.
+
+quiz:
+  - question: What does `docker buildx bake` do?
+    options:
+      - Bakes a cake
+      - Builds all targets declared in a bake file, in parallel
+      - Pushes to a registry only
+      - Runs containers
+    answer: 1
+    explanation: Bake builds the targets/groups from a declarative bake file — multiple images in one command.
