@@ -1,0 +1,72 @@
+title: Watching containers in production
+summary: From docker stats to cAdvisor and Prometheus.
+minutes: 7
+difficulty: intermediate
+order: 4
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker stats --no-stream
+      out: |
+        CONTAINER   CPU %   MEM USAGE / LIMIT   NET I/O     PIDS
+        web         2.1%    118MiB / 512MiB     1.2MB/0B    12
+        db          0.8%    240MiB / 1GiB       3.1MB/0B    9
+    - cmd: "# expose per-container metrics with cAdvisor"
+      out: |
+        docker run -d --name cadvisor -p 8080:8080 \
+          -v /:/rootfs:ro -v /var/run:/var/run:ro \
+          gcr.io/cadvisor/cadvisor
+    - cmd: curl -s localhost:8080/metrics | grep container_memory | head -2
+      out: |
+        container_memory_usage_bytes{name="web"} 1.23e+08
+        container_memory_usage_bytes{name="db"}  2.51e+08
+    - cmd: "# Prometheus scrapes cAdvisor; Grafana draws the graphs"
+      out: |
+        scrape_configs:
+          - job_name: cadvisor
+            static_configs: [{ targets: ["cadvisor:8080"] }]
+
+steps:
+  - kind: CONCEPT
+    title: Start with docker stats
+    label: stats
+    body: >
+      `docker stats` is the instant, zero-setup view — live CPU, memory, network
+      and PIDs per container. Perfect for "which container is on fire right now?".
+
+  - kind: PROBLEM
+    title: But it's just a snapshot
+    label: Not enough
+    body: >
+      `stats` shows *now*, on *one host*, with no history. In production you want
+      graphs over time, across every host, with alerts. Time for real tooling.
+
+  - kind: CONCEPT
+    title: cAdvisor exposes metrics
+    label: cAdvisor
+    body: >
+      **cAdvisor** watches all containers on a host and exposes their metrics at
+      `/metrics` in Prometheus format — CPU, memory, I/O, per container, no app
+      changes needed.
+
+  - kind: CONCEPT
+    title: Prometheus + Grafana
+    label: Prom + Grafana
+    body: >
+      **Prometheus** scrapes those metrics and stores them over time; **Grafana**
+      turns them into dashboards and alerts. The standard open-source container
+      monitoring stack.
+    callout:
+      kind: PICTURE
+      text: containers → cAdvisor (/metrics) → Prometheus (store + alert) → Grafana (dashboards).
+
+quiz:
+  - question: What does cAdvisor give you over `docker stats`?
+    options:
+      - Nicer colours
+      - Metrics in Prometheus format, scrapeable and storable over time
+      - Faster containers
+      - Automatic scaling
+    answer: 1
+    explanation: cAdvisor exposes historical-friendly metrics a monitoring system can scrape, unlike the point-in-time stats view.

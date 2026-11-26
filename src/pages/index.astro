@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import ResumeBanner from '../islands/ResumeBanner.jsx';
+import StatsCard from '../islands/StatsCard.jsx';
 import { getCourses } from '../lib/courses.js';
 import siteConfig from '../../site.config.json';
 
@@ -26,6 +27,7 @@ const totalLessons = courses.reduce((n, c) => n + c.lessonCount, 0);
     </div>
   </section>
 
+  <StatsCard client:load total={totalLessons} />
   <ResumeBanner client:load />
 
   <!-- course grid -->

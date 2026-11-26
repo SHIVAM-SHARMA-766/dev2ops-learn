@@ -56,6 +56,7 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
       if (e.key === 'ArrowRight' || e.key === 'l') { e.preventDefault(); setPlaying(false); go((s) => s + 1); }
       else if (e.key === 'ArrowLeft' || e.key === 'h') { e.preventDefault(); setPlaying(false); go((s) => s - 1); }
       else if (e.key === ' ') { e.preventDefault(); setPlaying((p) => !p); }
+      else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); setPlaying(false); go(0); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);

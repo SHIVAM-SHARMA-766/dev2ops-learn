@@ -21,6 +21,7 @@
     { "slug": "security", "title": "Securing containers" },
     { "slug": "production", "title": "Going to production" },
     { "slug": "beyond", "title": "Beyond one host" },
-    { "slug": "operating", "title": "Operating & debugging" }
+    { "slug": "operating", "title": "Operating & debugging" },
+    { "slug": "reference", "title": "Reference" }
   ]
 }

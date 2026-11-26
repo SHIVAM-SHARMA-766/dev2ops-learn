@@ -1,0 +1,77 @@
+title: Control remote Docker with contexts
+summary: Run docker commands against another machine, no SSH juggling.
+minutes: 6
+difficulty: intermediate
+order: 4
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker context create prod --docker "host=ssh://user@server"
+      out: |
+        prod
+        Successfully created context "prod"
+    - cmd: docker context ls
+      out: |
+        NAME       DESCRIPTION                 DOCKER ENDPOINT
+        default *  Current DOCKER_HOST based   unix:///var/run/docker.sock
+        prod                                   ssh://user@server
+    - cmd: docker context use prod
+      out: |
+        prod
+        Current context is now "prod"
+    - cmd: docker ps
+      out: |
+        (these are the containers running on the REMOTE server)
+    - cmd: docker context use default
+      out: |
+        (back to your local machine)
+
+steps:
+  - kind: CONCEPT
+    title: One CLI, many daemons
+    label: Contexts
+    body: >
+      A **context** is a saved connection to a Docker daemon — local, a remote
+      server over SSH, or a cloud endpoint. It lets one `docker` CLI target
+      different machines.
+
+  - kind: CONCEPT
+    title: Point at a remote host
+    label: create
+    body: >
+      `docker context create prod --docker "host=ssh://user@server"` saves an SSH
+      connection to a remote daemon. No volume mounts of the socket, no manual
+      tunnels.
+
+  - kind: CONCEPT
+    title: Switch with one command
+    label: use
+    body: >
+      `docker context use prod` and now **every** docker command runs against the
+      server. `docker ps` lists the server's containers; `docker compose up`
+      deploys there.
+    callout:
+      kind: KEY IDEA
+      text: Same commands you already know, aimed at a different machine — switch back with `use default`.
+
+  - kind: CAUTION
+    title: Know where you're pointed
+    label: Careful
+    body: >
+      The flip side: a `docker rm -f` while you're on `prod` hits production. Check
+      `docker context ls` (the `*` marks the active one) before destructive
+      commands.
+    callout:
+      kind: HABIT
+      text: Glance at the active context before anything with -f or prune on a remote.
+
+quiz:
+  - question: After `docker context use prod`, where does `docker ps` run?
+    options:
+      - Locally
+      - Against the remote daemon the context points to
+      - Nowhere
+      - Both
+    answer: 1
+    explanation: The active context retargets the CLI; commands run against that daemon until you switch back.

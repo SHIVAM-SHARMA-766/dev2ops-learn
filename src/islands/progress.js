@@ -56,3 +56,55 @@ export function getResume() {
   const all = readAll();
   return all._resume || null;
 }
+
+// ---- gamification --------------------------------------------------------
+
+function dayKey(ts) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function computeStreak(dayset) {
+  const msDay = 86400000;
+  const t = new Date();
+  t.setHours(0, 0, 0, 0);
+  const base = t.getTime();
+  let start;
+  if (dayset.has(dayKey(base))) start = base;
+  else if (dayset.has(dayKey(base - msDay))) start = base - msDay;
+  else return 0;
+  let streak = 0;
+  for (let i = 0; ; i++) {
+    if (dayset.has(dayKey(start - i * msDay))) streak++;
+    else break;
+  }
+  return streak;
+}
+
+const ACHIEVEMENTS = [
+  { id: 'first', icon: '🌱', name: 'First steps', desc: 'Finish your first lesson', test: (s) => s.count >= 1 },
+  { id: 'five', icon: '🔥', name: 'On a roll', desc: 'Finish 5 lessons', test: (s) => s.count >= 5 },
+  { id: 'ten', icon: '🐳', name: 'Whale hello there', desc: 'Finish 10 lessons', test: (s) => s.count >= 10 },
+  { id: 'twentyfive', icon: '⚙️', name: 'Well-oiled', desc: 'Finish 25 lessons', test: (s) => s.count >= 25 },
+  { id: 'streak2', icon: '📅', name: 'Two in a row', desc: 'A 2-day streak', test: (s) => s.streak >= 2 },
+  { id: 'streak7', icon: '🗓️', name: 'Week warrior', desc: 'A 7-day streak', test: (s) => s.streak >= 7 },
+  { id: 'done', icon: '🏆', name: 'Completionist', desc: 'Finish every lesson', test: (s) => s.total > 0 && s.count >= s.total },
+];
+
+/** Aggregate stats across all courses for the home gamification card. */
+export function getStats(total = 0) {
+  const all = readAll();
+  let tss = [];
+  for (const k of Object.keys(all)) {
+    if (k.startsWith('_')) continue;
+    tss = tss.concat(Object.values(all[k].completed || {}));
+  }
+  const count = tss.length;
+  const xp = count * 10;
+  const level = Math.floor(xp / 100) + 1;
+  const xpInLevel = xp % 100;
+  const streak = computeStreak(new Set(tss.map(dayKey)));
+  const base = { count, xp, level, xpInLevel, streak, total };
+  const achievements = ACHIEVEMENTS.map((a) => ({ id: a.id, icon: a.icon, name: a.name, desc: a.desc, unlocked: a.test(base) }));
+  return { ...base, achievements };
+}

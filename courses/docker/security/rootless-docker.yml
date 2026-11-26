@@ -1,0 +1,78 @@
+title: Rootless Docker
+summary: Run the whole daemon without root, shrinking the blast radius.
+minutes: 7
+difficulty: advanced
+order: 3
+
+scene:
+  widget: compare
+  left:
+    title: Rootful (default)
+    items:
+      - Daemon runs as root
+      - Socket access ≈ root on the host
+      - A daemon bug risks the whole box
+      - Simple, works everywhere
+      - Fine behind good controls
+  right:
+    title: Rootless
+    items:
+      - Daemon runs as your user
+      - Uses user namespaces
+      - A breakout lands as an unprivileged user
+      - Great for shared / multi-tenant hosts
+      - A few feature caveats
+  highlight:
+    - [0]
+    - [1, 2]
+    - [2]
+    - [3]
+
+steps:
+  - kind: PROBLEM
+    title: The daemon is root
+    label: Root daemon
+    body: >
+      By default `dockerd` runs as **root**, and anyone who can reach the Docker
+      socket can effectively become root on the host. That's a lot of trust in one
+      socket.
+
+  - kind: CONCEPT
+    title: Non-root as USER isn't enough
+    label: Not enough
+    body: >
+      Running your container process as a non-root `USER` helps — but the *daemon*
+      is still root. Rootless mode goes further: the daemon itself runs
+      unprivileged.
+    callout:
+      kind: RECAP
+      text: USER hardens the container. Rootless hardens the daemon underneath it.
+
+  - kind: CONCEPT
+    title: How rootless works
+    label: Rootless
+    body: >
+      `dockerd-rootless-setuptool.sh install` runs the daemon as your user inside
+      a **user namespace** — "root" in a container maps to your unprivileged host
+      user. A breakout is far less dangerous.
+
+  - kind: NOTICE
+    title: The trade-offs
+    label: Caveats
+    body: >
+      Some features need extra setup (low ports need `setcap`, certain storage
+      drivers, some networking). For shared build hosts and multi-tenant CI it's
+      well worth it; for a locked-down single-purpose VM, rootful is often fine.
+    callout:
+      kind: RULE OF THUMB
+      text: Untrusted or shared host → rootless. Your own single-tenant box → rootful is usually OK.
+
+quiz:
+  - question: What's the key security win of rootless Docker?
+    options:
+      - Smaller images
+      - The daemon itself doesn't run as root, so a breakout isn't root on the host
+      - Faster builds
+      - Automatic scanning
+    answer: 1
+    explanation: Rootless runs the daemon unprivileged via user namespaces, shrinking the blast radius of a compromise.

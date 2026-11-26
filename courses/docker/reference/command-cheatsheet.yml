@@ -1,0 +1,85 @@
+title: The command cheatsheet
+summary: The commands you'll reach for daily, grouped and highlighted.
+minutes: 6
+difficulty: beginner
+order: 1
+
+scene:
+  widget: codeWalk
+  filename: docker-cheatsheet.sh
+  lines:
+    - "# images"
+    - "docker pull nginx:1.27            # fetch an image"
+    - "docker images                     # list local images"
+    - "docker build -t app:1.0 .         # build from a Dockerfile"
+    - "docker rmi app:1.0                # remove an image"
+    - "# containers"
+    - "docker run -d -p 80:80 --name web nginx   # run detached + ports"
+    - "docker ps -a                      # list all containers"
+    - "docker stop web && docker rm web  # stop then remove"
+    - "docker exec -it web sh            # shell inside"
+    - "# logs & inspect"
+    - "docker logs -f web                # follow logs"
+    - "docker stats                      # live resource usage"
+    - "docker inspect web                # full JSON details"
+    - "# compose"
+    - "docker compose up -d --build      # build + start the stack"
+    - "docker compose logs -f            # tail all services"
+    - "docker compose down -v            # stop + remove (and volumes)"
+    - "# cleanup"
+    - "docker system df                  # what's using disk"
+    - "docker system prune               # remove unused junk"
+  highlights:
+    - [0, 1, 2, 3, 4]
+    - [5, 6, 7, 8, 9]
+    - [10, 11, 12, 13]
+    - [14, 15, 16, 17]
+    - [18, 19, 20]
+
+steps:
+  - kind: REFERENCE
+    title: Images
+    label: images
+    body: >
+      Pull, list, build, remove. `build -t name:tag .` is the one you'll type
+      most — the `.` is the build context (the current folder).
+
+  - kind: REFERENCE
+    title: Containers
+    label: containers
+    body: >
+      `run` to start, `ps -a` to see them all (including stopped), `stop`+`rm` to
+      clean up, `exec -it … sh` to jump inside a running one.
+
+  - kind: REFERENCE
+    title: Logs & inspect
+    label: logs
+    body: >
+      `logs -f` to follow output, `stats` for live CPU/memory, `inspect` for the
+      full picture. Your debugging trio.
+
+  - kind: REFERENCE
+    title: Compose
+    label: compose
+    body: >
+      `compose up -d --build` runs your whole app; `logs -f` tails it; `down -v`
+      tears it down (the `-v` also removes named volumes — mind your data).
+    callout:
+      kind: CARE
+      text: "`down -v` deletes the stack's named volumes. Leave off `-v` to keep your data."
+
+  - kind: REFERENCE
+    title: Cleanup
+    label: cleanup
+    body: >
+      `system df` shows where disk went; `system prune` reclaims it. Add `-a` for
+      more, `--volumes` only when you're sure.
+    callout:
+      kind: TIP
+      text: Bookmark this lesson — it's the five groups you'll use 90% of the time.
+
+quiz:
+  - question: Which command shows a live view of container CPU and memory?
+    options: ["docker ps", "docker stats", "docker logs", "docker inspect"]
+    answer: 1
+    explanation: "`docker stats` is a live top for containers; logs show output, inspect shows config."
