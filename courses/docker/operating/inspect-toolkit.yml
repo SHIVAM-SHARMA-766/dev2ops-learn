@@ -1,0 +1,78 @@
+title: The lesser-known inspection tools
+summary: cp, diff, top, events, port — small commands that save big time.
+minutes: 7
+difficulty: intermediate
+order: 5
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker cp web:/etc/nginx/nginx.conf ./nginx.conf
+      out: |
+        (copy a file OUT of a container — or in: docker cp ./x web:/path)
+    - cmd: docker diff web
+      out: |
+        C /var/log/nginx          changed
+        A /var/log/nginx/error.log added
+        (what this container changed vs its image)
+    - cmd: docker top web
+      out: |
+        PID    USER   COMMAND
+        2314   root   nginx: master process
+        2350   nginx  nginx: worker process
+    - cmd: docker events --filter container=web
+      out: |
+        2026-..  container  kill   web  (signal=15)
+        2026-..  container  die    web  (exitCode=0)
+    - cmd: docker port web
+      out: |
+        80/tcp -> 0.0.0.0:8080
+
+steps:
+  - kind: TOOL
+    title: docker cp — move files
+    label: cp
+    body: >
+      `docker cp` copies files **between a container and the host**, running or
+      stopped. Grab a config to inspect, or drop a file in for a quick test — no
+      rebuild.
+
+  - kind: TOOL
+    title: docker diff — what changed
+    label: diff
+    body: >
+      `docker diff` lists every file a container has **added, changed or deleted**
+      versus its image. Brilliant for spotting what an app writes at runtime (and
+      what should probably be a volume).
+    callout:
+      kind: KEY IDEA
+      text: diff shows exactly what lives in the writable layer — surprises and all.
+
+  - kind: TOOL
+    title: docker top — processes inside
+    label: top
+    body: >
+      `docker top` shows the processes running **inside** a container from the
+      host's view — no need to exec in. Quick check for "is it actually running my
+      command, or a shell?".
+
+  - kind: TOOL
+    title: events & port
+    label: events/port
+    body: >
+      `docker events` streams a live feed of daemon activity (starts, dies, OOM
+      kills) — great for catching crash loops. `docker port` prints a container's
+      published port mappings at a glance.
+    callout:
+      kind: KIT
+      text: cp (files) · diff (changes) · top (processes) · events (what happened) · port (mappings).
+
+quiz:
+  - question: Which command shows what files a container changed versus its image?
+    options: ["docker cp", "docker diff", "docker top", "docker port"]
+    answer: 1
+    explanation: "`docker diff` lists added/changed/deleted paths in the container's writable layer."
+  - question: You suspect a crash loop. Which gives a live feed of container lifecycle events?
+    options: ["docker ps", "docker events", "docker cp", "docker port"]
+    answer: 1
+    explanation: "`docker events` streams daemon activity — starts, dies, OOM kills — as it happens."

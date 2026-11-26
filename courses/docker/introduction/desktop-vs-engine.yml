@@ -1,0 +1,87 @@
+title: Docker Desktop vs Engine
+summary: What you actually installed on Mac, Windows and Linux.
+minutes: 6
+difficulty: beginner
+order: 5
+
+scene:
+  widget: compare
+  left:
+    title: Docker Desktop
+    items:
+      - Mac & Windows (and Linux)
+      - Runs a small Linux VM under the hood
+      - GUI, dashboard, bundled Compose/buildx
+      - Easiest way to start
+      - Paid for large companies
+  right:
+    title: Docker Engine
+    items:
+      - Linux only, no VM needed
+      - The daemon + CLI, nothing extra
+      - What runs on your servers
+      - Fully open-source
+      - Installed by the convenience script
+  highlight:
+    - [0, 1]
+    - [2, 3]
+    - [0, 1]
+    - [2, 3]
+
+steps:
+  - kind: CONCEPT
+    title: Containers need a Linux kernel
+    label: Why a VM
+    body: >
+      Containers are Linux-kernel features. On a Linux host, Docker runs natively.
+      On **Mac or Windows** there's no Linux kernel — so something has to provide
+      one.
+
+  - kind: CONCEPT
+    title: Desktop ships that kernel
+    label: Desktop
+    body: >
+      **Docker Desktop** runs a lightweight **Linux VM** behind the scenes (on
+      Windows, via WSL2) and gives you a GUI, a dashboard, and Compose/buildx
+      bundled. It's the easiest on-ramp on a laptop.
+    callout:
+      kind: NOTE
+      text: That's why your Mac containers are really running inside a tiny Linux VM — same kernel trick.
+
+  - kind: CONCEPT
+    title: Engine is the server piece
+    label: Engine
+    body: >
+      On a Linux server you install just **Docker Engine** — the `dockerd` daemon
+      and the CLI, no VM, no GUI. It's fully open-source and is what actually runs
+      your production containers.
+
+  - kind: NOTICE
+    title: A licensing note
+    label: Licensing
+    body: >
+      Docker Engine is free and open-source. **Docker Desktop** is free for
+      personal use, education and small businesses, but larger companies need a
+      paid subscription. Alternatives (Colima, Rancher Desktop, Podman) exist if
+      that's a concern.
+    callout:
+      kind: TL;DR
+      text: Laptop → Desktop (bundles a Linux VM). Server → Engine (native, open-source).
+
+quiz:
+  - question: Why does Docker Desktop run a Linux VM on a Mac?
+    options:
+      - For speed
+      - Containers need a Linux kernel, which macOS doesn't have
+      - To show a GUI
+      - For licensing
+    answer: 1
+    explanation: Containers are Linux-kernel features; on macOS the VM supplies that kernel.
+  - question: What do you install on a Linux production server?
+    options:
+      - Docker Desktop
+      - Docker Engine (daemon + CLI, no VM)
+      - A browser
+      - Nothing
+    answer: 1
+    explanation: Servers run Docker Engine natively — no VM or GUI needed.

@@ -1,0 +1,73 @@
+title: Build from anywhere
+summary: SSH forwarding, remote build contexts, and building straight from git.
+minutes: 7
+difficulty: advanced
+order: 4
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker build --ssh default -t app .
+      out: |
+        (forwards your SSH agent to the build — for private git deps)
+    - cmd: "# in the Dockerfile:"
+      out: |
+        RUN --mount=type=ssh git clone git@github.com:me/private.git
+    - cmd: docker build https://github.com/me/app.git#main
+      out: |
+        (build context pulled straight from a git repo + branch)
+    - cmd: docker build -f Dockerfile https://example.com/ctx.tar.gz
+      out: |
+        (or from a remote tarball URL)
+    - cmd: docker buildx build --builder cloud -t app .
+      out: |
+        (offload the build to a remote/cloud builder — nothing runs locally)
+
+steps:
+  - kind: PROBLEM
+    title: Builds need private things
+    label: The problem
+    body: >
+      Your build clones a private git repo or installs from a private package
+      feed. You need a key for that — but baking a key into the image is exactly
+      the leak we keep warning about.
+
+  - kind: CONCEPT
+    title: Forward your SSH agent
+    label: --ssh
+    body: >
+      `docker build --ssh default` forwards your **SSH agent** into the build for
+      a single `RUN --mount=type=ssh` step. The key is used, never stored in a
+      layer. Perfect for private git clones.
+    callout:
+      kind: KEY IDEA
+      text: The key is borrowed for one command and never written to the image. Like secret mounts, for SSH.
+
+  - kind: CONCEPT
+    title: The context can be remote
+    label: Remote context
+    body: >
+      The build context doesn't have to be your folder. Point `docker build` at a
+      **git URL** (with `#branch`) or a **tarball URL** and Docker fetches it. Great
+      for building a known commit in CI.
+
+  - kind: CONCEPT
+    title: Offload the build itself
+    label: Remote builder
+    body: >
+      With buildx you can run the build on a **remote or cloud builder** — handy
+      for fast multi-arch builds or to keep heavy builds off a laptop. Your CLI
+      drives it; the work happens elsewhere.
+    callout:
+      kind: BONUS
+      text: Combine remote builders + a shared cache and every teammate's build starts warm.
+
+quiz:
+  - question: How do you use a private SSH key during a build without leaking it?
+    options:
+      - COPY the key into the image
+      - "`docker build --ssh` with `RUN --mount=type=ssh`"
+      - Set it as an ENV
+      - Put it in .dockerignore
+    answer: 1
+    explanation: SSH forwarding mounts the agent for one step; the key never lands in a layer.

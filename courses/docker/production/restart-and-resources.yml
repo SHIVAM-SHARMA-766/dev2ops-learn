@@ -1,0 +1,78 @@
+title: Restart policies & reservations
+summary: Keep services up, and promise them the resources they need.
+minutes: 7
+difficulty: intermediate
+order: 5
+
+scene:
+  widget: codeWalk
+  filename: run & compose
+  lines:
+    - "# restart policies (docker run)"
+    - "docker run --restart no          myapp   # default: never restart"
+    - "docker run --restart on-failure:5 myapp  # retry up to 5 times on crash"
+    - "docker run --restart unless-stopped myapp # survive crashes + reboots"
+    - "docker run --restart always      myapp    # always, even after manual stop+daemon restart"
+    - ""
+    - "# limits vs reservations (compose)"
+    - "deploy:"
+    - "  resources:"
+    - "    limits:       { memory: 512M, cpus: \"1.0\" }   # hard ceiling"
+    - "    reservations: { memory: 256M, cpus: \"0.5\" }   # guaranteed floor"
+  highlights:
+    - [0, 1, 2, 3, 4]
+    - [1, 2]
+    - [3, 4]
+    - [7, 8, 9, 10]
+
+steps:
+  - kind: CONCEPT
+    title: Decide what happens on crash
+    label: Policies
+    body: >
+      A **restart policy** tells Docker what to do when a container exits. The
+      default is `no` — it stays dead. For a service, that's rarely what you want.
+
+  - kind: CONCEPT
+    title: on-failure vs unless-stopped
+    label: Which one
+    body: >
+      `on-failure:N` retries a crashing container up to N times — good for jobs.
+      `unless-stopped` keeps a service running across crashes **and host reboots**,
+      but respects a manual `docker stop`. That last one is the usual pick.
+    callout:
+      kind: KEY IDEA
+      text: "Most long-running services want `unless-stopped`: self-heal, survive reboots, obey a manual stop."
+
+  - kind: CONCEPT
+    title: always is a bigger hammer
+    label: always
+    body: >
+      `always` restarts even after you manually stop it (once the daemon
+      restarts). Powerful, occasionally surprising — reach for `unless-stopped`
+      unless you truly mean "always".
+
+  - kind: CONCEPT
+    title: Limits cap, reservations guarantee
+    label: Reservations
+    body: >
+      A **limit** is a ceiling the container can't exceed. A **reservation** is a
+      floor the scheduler guarantees it. Set both: reserve what it needs to run
+      well, cap what it can grab if it misbehaves.
+    callout:
+      kind: TAKEAWAY
+      text: limits protect the host from the container; reservations protect the container from noisy neighbours.
+
+quiz:
+  - question: Which restart policy survives crashes and reboots but honours a manual stop?
+    options: ["no", "always", "unless-stopped", "on-failure"]
+    answer: 2
+    explanation: unless-stopped self-heals and survives reboots, but stays down if you deliberately stop it.
+  - question: What's the difference between a limit and a reservation?
+    options:
+      - Nothing
+      - A limit is a hard ceiling; a reservation is a guaranteed floor
+      - Reservations are faster
+      - Limits are for CPU only
+    answer: 1
+    explanation: Limits cap maximum usage; reservations guarantee a minimum the scheduler sets aside.

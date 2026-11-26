@@ -1,0 +1,86 @@
+title: Seccomp & AppArmor
+summary: Filter the syscalls and files a container is even allowed to touch.
+minutes: 7
+difficulty: advanced
+order: 6
+
+scene:
+  widget: compare
+  left:
+    title: Seccomp
+    items:
+      - Filters Linux syscalls
+      - Docker ships a sane default profile
+      - Blocks dangerous calls (e.g. some mounts)
+      - "--security-opt seccomp=profile.json"
+      - Defence against kernel attack surface
+  right:
+    title: AppArmor / SELinux
+    items:
+      - Mandatory Access Control (files, caps)
+      - Docker ships docker-default
+      - Restricts what paths a process touches
+      - "--security-opt apparmor=myprofile"
+      - Confines the process beyond permissions
+  highlight:
+    - [0, 1]
+    - [2, 3]
+    - [0, 1]
+    - [2, 3]
+
+steps:
+  - kind: CONCEPT
+    title: Two more layers of defence
+    label: Defence
+    body: >
+      Capabilities limit *powers*; seccomp and AppArmor go deeper — they limit the
+      very **syscalls** a process can make and the **files** it can touch. Docker
+      enables sensible defaults for both.
+
+  - kind: CONCEPT
+    title: Seccomp filters syscalls
+    label: Seccomp
+    body: >
+      A **seccomp** profile is an allow/deny list of kernel syscalls. Docker's
+      default blocks dozens of rarely-needed, dangerous ones, shrinking the kernel
+      attack surface without you doing anything.
+    callout:
+      kind: KEY IDEA
+      text: Fewer reachable syscalls = fewer kernel bugs an attacker can reach.
+
+  - kind: CONCEPT
+    title: AppArmor / SELinux confine access
+    label: MAC
+    body: >
+      **AppArmor** (Debian/Ubuntu) and **SELinux** (RHEL) are Mandatory Access
+      Control systems. Docker's default profile restricts which paths and
+      operations a container can perform, on top of normal permissions.
+
+  - kind: CONCEPT
+    title: Custom profiles for tight apps
+    label: Custom
+    body: >
+      For sensitive workloads, write a tighter profile and attach it with
+      `--security-opt`. Start from the default, remove what your app doesn't need,
+      test, and ship.
+    callout:
+      kind: DON'T
+      text: "`--security-opt seccomp=unconfined` turns the filter OFF. Avoid it unless debugging."
+
+quiz:
+  - question: What does a seccomp profile control?
+    options:
+      - Network ports
+      - Which Linux syscalls a process may make
+      - Image size
+      - Environment variables
+    answer: 1
+    explanation: Seccomp allow/deny-lists syscalls, reducing the kernel attack surface.
+  - question: Running `--security-opt seccomp=unconfined` does what?
+    options:
+      - Tightens security
+      - Disables the syscall filter (less safe)
+      - Enables AppArmor
+      - Nothing
+    answer: 1
+    explanation: unconfined removes the seccomp filter — only do this to debug, never as a default.
