@@ -1,0 +1,81 @@
+title: tmpfs & backing up volumes
+summary: Keep secrets in RAM, and never lose a volume you care about.
+minutes: 7
+difficulty: intermediate
+order: 3
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker run --tmpfs /tmp:size=64m myapp
+      out: |
+        (/tmp lives in RAM — fast, and wiped when the container stops)
+    - cmd: docker volume create pgdata
+      out: |
+        pgdata
+    - cmd: "# back up a volume to a tar on the host"
+      out: |
+        docker run --rm -v pgdata:/data -v $(pwd):/backup alpine \
+          tar czf /backup/pgdata.tar.gz -C /data .
+    - cmd: "# restore it into a fresh volume"
+      out: |
+        docker run --rm -v pgdata:/data -v $(pwd):/backup alpine \
+          tar xzf /backup/pgdata.tar.gz -C /data
+
+steps:
+  - kind: CONCEPT
+    title: tmpfs — storage in RAM
+    label: tmpfs
+    body: >
+      `--tmpfs /tmp` mounts a memory-backed filesystem. It's fast and **never
+      touches disk** — ideal for scratch files and secrets you don't want
+      persisted. It vanishes when the container stops.
+    callout:
+      kind: USE IT
+      text: Good for /tmp, caches, and decrypted secrets that must not hit disk.
+
+  - kind: PROBLEM
+    title: Volumes aren't magically backed up
+    label: No free backup
+    body: >
+      A named volume survives the container, but it's still just data on one host.
+      Disk dies, volume gone. You need a real backup.
+
+  - kind: CONCEPT
+    title: Back up with a throwaway container
+    label: Back up
+    body: >
+      The trick: run a tiny `alpine` container, mount the volume **and** a host
+      folder, and `tar` the volume out to the host. No special tooling — just a
+      container that can see both.
+    callout:
+      kind: KEY IDEA
+      text: A volume is reachable by any container that mounts it — so a helper container can archive it.
+
+  - kind: CONCEPT
+    title: Restore the same way
+    label: Restore
+    body: >
+      To restore, create a fresh volume and `tar` the archive back in via the same
+      helper-container pattern. Automate it in cron and your data has a safety net.
+    callout:
+      kind: TIP
+      text: For databases, a `pg_dump`/`mysqldump` inside the container is often safer than a raw file copy.
+
+quiz:
+  - question: What's special about a tmpfs mount?
+    options:
+      - It's encrypted
+      - It lives in RAM and is wiped when the container stops
+      - It's shared between hosts
+      - It's read-only
+    answer: 1
+    explanation: tmpfs is memory-backed — fast, never written to disk, and gone on stop.
+  - question: How do you back up a named volume?
+    options:
+      - docker volume backup
+      - Mount it into a helper container and tar it to the host
+      - You can't
+      - Copy /var/lib/docker by hand
+    answer: 1
+    explanation: Any container that mounts the volume can archive it — the portable backup pattern.

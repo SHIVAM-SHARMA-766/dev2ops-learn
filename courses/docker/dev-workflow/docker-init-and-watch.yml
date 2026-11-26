@@ -1,0 +1,89 @@
+title: A fast inner-loop with Docker
+summary: Scaffold with docker init, then live-reload with compose watch.
+minutes: 8
+difficulty: intermediate
+order: 1
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker init
+      out: |
+        ? What application platform?  Node
+        ✓ Created Dockerfile
+        ✓ Created compose.yaml
+        ✓ Created .dockerignore
+    - cmd: "# compose.yaml  (develop → watch)"
+      out: |
+        services:
+          web:
+            build: .
+            develop:
+              watch:
+                - { action: sync, path: ./src, target: /app/src }
+                - { action: rebuild, path: package.json }
+    - cmd: docker compose watch
+      out: |
+        ⦿ watching ./src   (sync on change)
+        ⦿ watching package.json   (rebuild on change)
+        [web] edit src/app.js → synced in 40ms
+    - cmd: docker compose up --build -d
+      out: |
+        (one command: build images, create network, start the stack)
+
+steps:
+  - kind: CONCEPT
+    title: Scaffold with docker init
+    label: docker init
+    body: >
+      `docker init` asks a couple of questions and writes a sensible
+      **Dockerfile**, **compose.yaml** and **.dockerignore** for your stack. A
+      great starting point you then refine.
+
+  - kind: PROBLEM
+    title: Rebuilding on every edit is slow
+    label: Slow loop
+    body: >
+      Running your app in a container is great for parity — but rebuilding the
+      image on every code change kills your flow. You want edits to show up
+      instantly.
+
+  - kind: CONCEPT
+    title: compose watch syncs changes
+    label: watch
+    body: >
+      The `develop.watch` block tells Compose what to do on file changes: **sync**
+      source straight into the running container, or **rebuild** when something
+      like `package.json` changes. `docker compose watch` runs it.
+    callout:
+      kind: KEY IDEA
+      text: sync for source (instant), rebuild for dependency/manifest changes. Container parity with a fast loop.
+
+  - kind: CONCEPT
+    title: One command to run it all
+    label: up
+    body: >
+      `docker compose up --build` builds everything, wires the network and starts
+      the stack. Combined with watch, your dev environment is reproducible *and*
+      fast — the best of both.
+    callout:
+      kind: BONUS
+      text: VS Code / JetBrains "dev containers" take this further — your whole editor runs against the container.
+
+quiz:
+  - question: What does `docker compose watch` with a `sync` action do?
+    options:
+      - Rebuilds the image on every change
+      - Copies changed source into the running container live
+      - Restarts the host
+      - Nothing in dev
+    answer: 1
+    explanation: sync pushes source changes straight into the container for an instant inner loop.
+  - question: What does `docker init` create?
+    options:
+      - A registry
+      - A Dockerfile, compose.yaml and .dockerignore scaffold
+      - A volume
+      - A Kubernetes manifest
+    answer: 1
+    explanation: It scaffolds the starter Docker files tailored to your detected stack.

@@ -1,0 +1,71 @@
+title: Run your own registry
+summary: A private image store in one container.
+minutes: 7
+difficulty: intermediate
+order: 1
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker run -d -p 5000:5000 --name registry registry:2
+      out: |
+        (a full OCI registry, now listening on localhost:5000)
+    - cmd: docker tag myapp:1.4.2 localhost:5000/myapp:1.4.2
+      out: |
+        (re-tag with the registry host as the prefix)
+    - cmd: docker push localhost:5000/myapp:1.4.2
+      out: |
+        1.4.2: digest: sha256:7b2e… size: 1789
+    - cmd: curl -s localhost:5000/v2/_catalog
+      out: |
+        {"repositories":["myapp"]}
+    - cmd: docker pull localhost:5000/myapp:1.4.2
+      out: |
+        Status: Downloaded newer image for localhost:5000/myapp:1.4.2
+
+steps:
+  - kind: CONCEPT
+    title: A registry is just a container
+    label: Run it
+    body: >
+      The official `registry:2` image **is** a registry. One `docker run` and you
+      have a private image store — handy for air-gapped networks, CI caches, or
+      keeping images in-house.
+
+  - kind: CONCEPT
+    title: The host goes in the name
+    label: Re-tag
+    body: >
+      To push somewhere other than Docker Hub, the **registry host is part of the
+      image name**: `localhost:5000/myapp:1.4.2`. Re-tag, then push.
+    callout:
+      kind: KEY IDEA
+      text: No registry prefix → Docker Hub. A `host:port/` prefix → that registry.
+
+  - kind: CONCEPT
+    title: Push, list, pull
+    label: Use it
+    body: >
+      Push as usual. The registry has a simple HTTP API — `/v2/_catalog` lists
+      repositories. Any machine that can reach it can pull the exact image.
+
+  - kind: CAUTION
+    title: Make it real for production
+    label: Harden
+    body: >
+      A bare registry has no auth and no TLS. For real use, put it behind HTTPS
+      (a reverse proxy), add authentication, and back its storage — or just use a
+      managed registry (GHCR, ECR, Harbor).
+    callout:
+      kind: REMEMBER
+      text: Great for local/CI out of the box; add TLS + auth before anyone else touches it.
+
+quiz:
+  - question: How does Docker know to push to your private registry instead of Docker Hub?
+    options:
+      - A config flag
+      - The registry host is part of the image name (host:port/repo)
+      - It asks you
+      - Environment variable
+    answer: 1
+    explanation: The image name's prefix is the registry; no prefix defaults to Docker Hub.

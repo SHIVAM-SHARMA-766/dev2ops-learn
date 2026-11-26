@@ -1,0 +1,76 @@
+title: Logs that don't eat your disk
+summary: Logging drivers, rotation, and shipping logs somewhere central.
+minutes: 7
+difficulty: intermediate
+order: 3
+
+scene:
+  widget: compare
+  left:
+    title: Default (json-file)
+    items:
+      - Captures stdout/stderr to a JSON file
+      - "docker logs works out of the box"
+      - Unbounded by default — can fill the disk
+      - Fix with max-size / max-file rotation
+      - Per-container, stays on the host
+  right:
+    title: Central drivers
+    items:
+      - "local: efficient, rotated by default"
+      - "json-file + a log shipper (Fluent Bit)"
+      - "Vector / Loki / ELK for search"
+      - Aggregate across all hosts
+      - What you want in production
+  highlight:
+    - [0, 1]
+    - [2, 3]
+    - [0, 4]
+    - [2, 3]
+
+steps:
+  - kind: CONCEPT
+    title: Containers log to stdout
+    label: stdout
+    body: >
+      Your app writes to stdout/stderr; Docker's **logging driver** decides where
+      that goes. The default `json-file` driver is what `docker logs` reads.
+
+  - kind: PROBLEM
+    title: The default can fill your disk
+    label: Disk filler
+    body: >
+      `json-file` has **no size limit** by default. A chatty container can quietly
+      fill the disk with log files until everything falls over.
+    callout:
+      kind: FIX
+      text: Set `--log-opt max-size=10m --log-opt max-file=3` (or the daemon default) to rotate logs.
+
+  - kind: CONCEPT
+    title: Rotate, or switch driver
+    label: Rotate
+    body: >
+      Cap and rotate the json-file logs, or use the `local` driver (compact,
+      rotated by default). Set it once in `/etc/docker/daemon.json` so every
+      container inherits sane limits.
+
+  - kind: CONCEPT
+    title: Ship them somewhere central
+    label: Centralise
+    body: >
+      In production you don't SSH to each host to read logs. Ship stdout to a
+      collector (Fluent Bit, Vector) into Loki / ELK / a cloud service, so you can
+      search across every container in one place.
+    callout:
+      kind: RULE
+      text: App logs to stdout. The platform rotates and ships them. Don't write log files inside the image.
+
+quiz:
+  - question: Why can the default json-file logging driver be dangerous?
+    options:
+      - It's slow
+      - It has no size limit by default and can fill the disk
+      - It encrypts logs
+      - It drops logs
+    answer: 1
+    explanation: Without max-size/max-file rotation, json-file logs grow unbounded and can fill the disk.

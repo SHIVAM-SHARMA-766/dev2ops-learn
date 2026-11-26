@@ -1,0 +1,76 @@
+title: Env files, interpolation & build
+summary: Configure a stack cleanly and build images right inside Compose.
+minutes: 7
+difficulty: intermediate
+order: 4
+
+scene:
+  widget: codeWalk
+  filename: .env + compose.yaml
+  lines:
+    - "# .env  (auto-loaded by Compose)"
+    - "TAG=1.4.2"
+    - "DB_PASSWORD=secret"
+    - ""
+    - "# compose.yaml"
+    - "services:"
+    - "  web:"
+    - "    build:"
+    - "      context: ."
+    - "      args: { NODE_ENV: production }"
+    - "    image: myorg/web:${TAG}"
+    - "  db:"
+    - "    image: postgres:16"
+    - "    environment:"
+    - "      POSTGRES_PASSWORD: ${DB_PASSWORD}"
+  highlights:
+    - [0, 1, 2]
+    - [10]
+    - [13, 14]
+    - [6, 7, 8, 9]
+
+steps:
+  - kind: CONCEPT
+    title: A .env file Compose loads for you
+    label: .env
+    body: >
+      Compose automatically reads a `.env` file next to your compose file. Its
+      values become variables you can reference — no exporting in your shell.
+
+  - kind: CONCEPT
+    title: Interpolation with ${VAR}
+    label: ${VAR}
+    body: >
+      `${TAG}` and `${DB_PASSWORD}` get substituted from the environment / `.env`
+      at parse time. Change the tag in one place and every reference updates.
+    callout:
+      kind: TIP
+      text: "`${VAR:-default}` supplies a fallback when the variable isn't set."
+
+  - kind: CONCEPT
+    title: Pass config to services
+    label: environment
+    body: >
+      Feed those values into a service's `environment`. The database reads its
+      password from `${DB_PASSWORD}` — config stays out of the committed YAML.
+    callout:
+      kind: NOTE
+      text: Keep the real `.env` out of git; commit a `.env.example` with blank values.
+
+  - kind: CONCEPT
+    title: Build images inside Compose
+    label: build
+    body: >
+      `build:` lets Compose build an image from a Dockerfile (with `args`) and tag
+      it. `docker compose up --build` rebuilds when your code changes — your whole
+      app, one command.
+
+quiz:
+  - question: Where does Compose read `${TAG}` from automatically?
+    options:
+      - A remote server
+      - A .env file next to the compose file (and the environment)
+      - The Dockerfile
+      - The registry
+    answer: 1
+    explanation: Compose auto-loads `.env` and substitutes ${VAR} references at parse time.

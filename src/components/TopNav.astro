@@ -28,6 +28,11 @@ const links = [
 
     <div class="topnav__spacer"></div>
 
+    <button class="searchbtn mono" type="button" onclick="window.dispatchEvent(new CustomEvent('d2o-open-search'))" aria-label="Search lessons">
+      <span>⌕ Search</span>
+      <kbd>Ctrl K</kbd>
+    </button>
+
     <button class="iconbtn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle light / dark">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <circle cx="12" cy="12" r="4"></circle>

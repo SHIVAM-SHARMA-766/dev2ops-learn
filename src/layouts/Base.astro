@@ -1,6 +1,7 @@
 ---
 import '../styles/app.css';
 import TopNav from '../components/TopNav.astro';
+import Search from '../islands/Search.jsx';
 import siteConfig from '../../site.config.json';
 
 const {
@@ -35,5 +36,6 @@ const fullTitle = title ? `${title} · ${siteConfig.title}` : siteConfig.title;
     <main class={wide ? '' : 'wrap'} style={wide ? '' : 'padding-block: 32px 64px'}>
       <slot />
     </main>
+    <Search client:idle />
   </body>
 </html>

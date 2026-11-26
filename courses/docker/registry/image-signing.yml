@@ -1,0 +1,71 @@
+title: Signing & trusting images
+summary: Prove an image is really yours and hasn't been tampered with.
+minutes: 7
+difficulty: advanced
+order: 2
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: cosign generate-key-pair
+      out: |
+        Private key written to cosign.key
+        Public key written to cosign.pub
+    - cmd: cosign sign myorg/myapp@sha256:7b2e…
+      out: |
+        Pushing signature to: myorg/myapp
+        tlog entry created  (recorded in a transparency log)
+    - cmd: cosign verify --key cosign.pub myorg/myapp@sha256:7b2e…
+      out: |
+        Verified OK  ✓  signature matches the public key
+    - cmd: cosign verify --key cosign.pub myorg/tampered@sha256:aaaa…
+      out: |
+        Error: no matching signatures  ✗
+
+steps:
+  - kind: PROBLEM
+    title: How do you trust an image?
+    label: Trust?
+    body: >
+      You pull `myorg/myapp`. How do you know it's really from your team and
+      hasn't been swapped in the registry? A tag can be re-pointed; a digest
+      proves *content*, but not *who made it*.
+
+  - kind: CONCEPT
+    title: Sign with a key
+    label: Sign
+    body: >
+      Tools like **cosign** (Sigstore) sign an image's digest with your private
+      key and publish the signature alongside it — often also recording it in a
+      public **transparency log**.
+    callout:
+      kind: KEY IDEA
+      text: Signing binds "this exact image" to "this identity". Tampering breaks the signature.
+
+  - kind: CONCEPT
+    title: Verify before you run
+    label: Verify
+    body: >
+      Consumers `cosign verify --key cosign.pub` to check the signature matches
+      your public key. In CI or at admission, make a failed verification **block**
+      the deploy.
+
+  - kind: CONCEPT
+    title: Tampered images fail
+    label: Tampered
+    body: >
+      Swap in a different image and verification fails — no matching signature.
+      That's supply-chain security: only images you actually signed get to run.
+    callout:
+      kind: BONUS
+      text: Pair with SBOMs (`docker sbom` / syft) so you also know exactly what's inside.
+
+quiz:
+  - question: What does signing an image with cosign give you that a digest alone doesn't?
+    options:
+      - A smaller image
+      - Proof of WHO produced it, not just that content is fixed
+      - Faster pulls
+      - Automatic scanning
+    answer: 1
+    explanation: A digest fixes content; a signature binds that content to a trusted identity.

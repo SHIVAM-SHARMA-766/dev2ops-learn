@@ -1,0 +1,81 @@
+title: Profiles & override files
+summary: One Compose project, many shapes — dev, prod, optional extras.
+minutes: 8
+difficulty: intermediate
+order: 3
+
+scene:
+  widget: codeWalk
+  filename: compose.yaml + overrides
+  lines:
+    - "# compose.yaml  (base, always applied)"
+    - "services:"
+    - "  web: { build: ., ports: [\"3000:3000\"] }"
+    - "  db:  { image: postgres:16 }"
+    - "  seed:"
+    - "    image: myseeder"
+    - "    profiles: [tools]      # only runs when asked"
+    - ""
+    - "# compose.override.yaml  (auto-merged in dev)"
+    - "services:"
+    - "  web: { volumes: [\"./src:/app/src\"], command: npm run dev }"
+  highlights:
+    - [1, 2, 3]
+    - [4, 5, 6]
+    - [8, 9, 10]
+
+steps:
+  - kind: CONCEPT
+    title: A base file for what's always true
+    label: Base
+    body: >
+      `compose.yaml` holds the services every environment needs — `web` and `db`.
+      Keep it minimal and environment-agnostic.
+
+  - kind: CONCEPT
+    title: Profiles — optional services
+    label: Profiles
+    body: >
+      A service with `profiles: [tools]` stays **off** by default. Start it only
+      when you ask: `docker compose --profile tools up`. Perfect for seeders,
+      admin UIs, one-off jobs.
+    callout:
+      kind: KEY IDEA
+      text: Profiles let one Compose file carry optional pieces without running them every time.
+
+  - kind: CONCEPT
+    title: Override files merge automatically
+    label: Override
+    body: >
+      `compose.override.yaml` is merged on top of the base **automatically** in
+      dev. Here it adds a source bind-mount and a dev command to `web` — without
+      touching the base file.
+
+  - kind: CONCEPT
+    title: Pick files per environment
+    label: -f
+    body: >
+      For production, skip the auto override and compose explicit files:
+      `docker compose -f compose.yaml -f compose.prod.yaml up`. Same base, a
+      different top layer.
+    callout:
+      kind: PATTERN
+      text: base + override = dev; base + prod = prod. One source of truth, many shapes.
+
+quiz:
+  - question: "A service has `profiles: [tools]`. When does it run?"
+    options:
+      - Always
+      - Only with `--profile tools` (or that profile enabled)
+      - Never
+      - Only in production
+    answer: 1
+    explanation: Profiled services are opt-in; they stay off unless their profile is activated.
+  - question: What does compose.override.yaml do by default?
+    options:
+      - Replaces the base file
+      - Is auto-merged on top of compose.yaml
+      - Is ignored
+      - Only works in prod
+    answer: 1
+    explanation: Compose automatically merges an override file over the base, great for dev tweaks.

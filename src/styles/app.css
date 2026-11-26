@@ -149,6 +149,58 @@ h1, h2, h3, .mono { font-family: var(--font-mono); }
 }
 .iconbtn:hover { color: var(--ink); border-color: var(--line-strong); }
 
+.searchbtn {
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 34px; padding: 0 10px 0 12px; border-radius: var(--radius-sm);
+  background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft);
+  cursor: pointer; font-size: 13px;
+}
+.searchbtn:hover { color: var(--ink); border-color: var(--line-strong); }
+.searchbtn kbd {
+  font-family: var(--font-mono); font-size: 10.5px; padding: 1px 6px; border-radius: 5px;
+  background: var(--surface-2); border: 1px solid var(--line-strong); color: var(--ink-faint);
+}
+@media (max-width: 560px) { .searchbtn span { display: none; } }
+
+/* ---- search modal ---- */
+.search {
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(20, 16, 12, 0.45); backdrop-filter: blur(3px);
+  display: flex; justify-content: center; align-items: flex-start; padding: 12vh 16px 16px;
+}
+.search__panel {
+  width: 100%; max-width: 560px; background: var(--surface);
+  border: 1px solid var(--line-strong); border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35); overflow: hidden;
+  animation: d2o-pop 0.14s ease;
+}
+@keyframes d2o-pop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.search__bar { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.search__icon { font-size: 18px; color: var(--ink-faint); }
+.search__input {
+  flex: 1; border: none; background: none; outline: none; color: var(--ink);
+  font-size: 16px; font-family: var(--font-sans);
+}
+.search__esc { font-size: 10.5px; padding: 2px 7px; border-radius: 5px; background: var(--surface-2); border: 1px solid var(--line-strong); color: var(--ink-faint); }
+.search__results { max-height: 52vh; overflow-y: auto; padding: 6px; }
+.search__empty { padding: 22px; text-align: center; color: var(--ink-faint); font-size: 13px; }
+.search__item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px;
+  text-decoration: none; color: var(--ink);
+}
+.search__item.is-sel { background: var(--accent-soft); }
+.search__itemicon {
+  width: 34px; height: 34px; border-radius: 9px; flex: none; display: grid; place-items: center;
+  background: var(--surface-2); font-size: 17px;
+}
+.search__item.is-sel .search__itemicon { background: var(--accent); }
+.search__itemtext { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.search__itemtitle { font-weight: 600; font-size: 14.5px; }
+.search__itemmeta { font-size: 11.5px; color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search__enter { color: var(--ink-faint); font-size: 13px; opacity: 0; }
+.search__item.is-sel .search__enter { opacity: 1; color: var(--accent); }
+.search__foot { padding: 10px 16px; border-top: 1px solid var(--line); font-size: 11px; color: var(--ink-faint); }
+
 /* generic card ------------------------------------------------------------ */
 .card {
   background: var(--surface);
