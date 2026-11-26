@@ -1,0 +1,81 @@
+title: Compose vs Swarm vs Kubernetes
+summary: When one host is enough, and when to graduate.
+minutes: 7
+difficulty: intermediate
+order: 2
+
+scene:
+  widget: compare
+  left:
+    title: Compose / Swarm
+    items:
+      - "Compose: one host, dev & small prod"
+      - "Swarm: a few hosts, built into Docker"
+      - Same YAML you already know
+      - Minutes to learn, runs anywhere
+      - Great until you need more
+  right:
+    title: Kubernetes
+    items:
+      - Many hosts, serious scale
+      - Self-healing, autoscaling, rollouts
+      - Huge ecosystem & community
+      - Steeper learning curve
+      - The industry default at scale
+  highlight:
+    - [0]
+    - [1]
+    - [3]
+    - [4]
+
+steps:
+  - kind: CONCEPT
+    title: Start where you are
+    label: Compose
+    body: >
+      For local dev and a single small server, **Compose** is all you need. One
+      file, `docker compose up`, done. Don't reach for a cluster before you have a
+      cluster's problems.
+
+  - kind: CONCEPT
+    title: A few machines → Swarm
+    label: Swarm
+    body: >
+      Need a handful of machines with failover and load balancing, without a big
+      learning curve? **Swarm** reuses your Compose knowledge and ships with
+      Docker. A sensible middle step.
+
+  - kind: CONCEPT
+    title: Real scale → Kubernetes
+    label: Kubernetes
+    body: >
+      When you need autoscaling, zero-downtime rollouts, rich networking and a
+      vast ecosystem across many nodes, **Kubernetes** is the industry standard —
+      and it runs your same container images unchanged.
+    callout:
+      kind: KEY IDEA
+      text: The image never changes. Only the thing that schedules it does.
+
+  - kind: TIP
+    title: Pick for today, not for a fantasy
+    label: Choose
+    body: >
+      Most teams over-reach. Use the simplest tool that fits now; your Docker
+      images carry over to the next tier whenever you genuinely outgrow it.
+    callout:
+      kind: TAKEAWAY
+      text: Compose → Swarm → Kubernetes is a ladder. Climb it only when the rung you're on hurts.
+
+quiz:
+  - question: You run one small app on a single VM. Best tool?
+    options: ["Kubernetes", "Docker Compose", "A custom scheduler", "Nothing"]
+    answer: 1
+    explanation: Compose is perfect for a single host; a full cluster would be needless complexity.
+  - question: What carries over when you move from Compose to Kubernetes?
+    options:
+      - Nothing
+      - Your container images, unchanged
+      - Only the Dockerfile syntax
+      - The Compose file verbatim
+    answer: 1
+    explanation: The images are portable; only the orchestrator that schedules them changes.

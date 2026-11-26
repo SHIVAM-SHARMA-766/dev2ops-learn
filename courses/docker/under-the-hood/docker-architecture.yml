@@ -1,0 +1,75 @@
+title: What happens when you type docker run
+summary: The CLI, the daemon, containerd, runc — who does what.
+minutes: 8
+difficulty: intermediate
+order: 1
+
+scene:
+  widget: diagram
+  nodes:
+    - { id: cli, label: docker CLI, sub: you type, x: 12, y: 28 }
+    - { id: daemon, label: dockerd, sub: the daemon, x: 40, y: 28 }
+    - { id: registry, label: registry, sub: docker pull, x: 40, y: 72 }
+    - { id: containerd, label: containerd, sub: tracks containers, x: 68, y: 28 }
+    - { id: runc, label: runc, sub: spawns it, x: 90, y: 28 }
+    - { id: container, label: container, sub: your process, x: 90, y: 72 }
+  edges:
+    - [cli, daemon]
+    - [daemon, registry]
+    - [daemon, containerd]
+    - [containerd, runc]
+    - [runc, container]
+  active:
+    - [cli, daemon]
+    - [daemon, registry]
+    - [daemon, containerd]
+    - [containerd, runc, container]
+
+steps:
+  - kind: CONCEPT
+    title: The CLI is just a client
+    label: CLI
+    body: >
+      `docker` on your terminal is a thin **client**. It doesn't run containers —
+      it sends your command over a socket to a background service and prints the
+      reply.
+    callout:
+      kind: SO
+      text: The real work happens in the daemon. The CLI just asks it nicely.
+
+  - kind: CONCEPT
+    title: The daemon finds the image
+    label: dockerd
+    body: >
+      `dockerd` (the daemon) receives "run nginx". If the image isn't local, it
+      pulls it from a **registry** first. The daemon is the brain — API, images,
+      networks, volumes.
+
+  - kind: CONCEPT
+    title: containerd manages the lifecycle
+    label: containerd
+    body: >
+      The daemon hands off to **containerd**, the component that actually
+      supervises containers — start, stop, pause, delete. It's a standard
+      (OCI) piece you'll also see under Kubernetes.
+
+  - kind: CONCEPT
+    title: runc does the kernel magic
+    label: runc
+    body: >
+      containerd calls **runc**, a tiny tool that talks to the Linux kernel to
+      create the isolated process — namespaces, cgroups, the lot — then gets out
+      of the way. Your container is now a real process on the host.
+    callout:
+      kind: BIG PICTURE
+      text: CLI → dockerd → containerd → runc → your process. Each layer is swappable and standardised.
+
+quiz:
+  - question: Where do containers actually run?
+    options:
+      - Inside the docker CLI
+      - As isolated processes on the host, created via runc
+      - In a virtual machine, always
+      - In the registry
+    answer: 1
+    explanation: The CLI just talks to dockerd; runc asks the kernel to create the isolated process on the host.

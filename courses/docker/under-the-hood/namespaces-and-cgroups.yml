@@ -1,0 +1,76 @@
+title: The two kernel features behind containers
+summary: Namespaces isolate what a container sees; cgroups limit what it uses.
+minutes: 8
+difficulty: intermediate
+order: 2
+
+scene:
+  widget: stagedReveal
+  caption: No magic — just Linux features Docker orchestrates for you.
+  items:
+    - label: PID namespace
+      note: Its own process tree — the container's main app is PID 1, can't see host processes.
+      tag: isolate
+    - label: Network namespace
+      note: Its own interfaces, IP and routing table.
+      tag: isolate
+    - label: Mount namespace
+      note: Its own filesystem view — the image, not the host's disk.
+      tag: isolate
+    - label: User namespace
+      note: Map container root to an unprivileged host user.
+      tag: isolate
+    - label: cgroups
+      note: Cap CPU, memory, I/O and PIDs — what the container can USE.
+      tag: limit
+
+steps:
+  - kind: CONCEPT
+    title: There is no "container" in Linux
+    label: No magic
+    body: >
+      The kernel has no "container" object. A container is an ordinary process
+      that Docker wraps in two kinds of kernel feature. That's the whole trick.
+
+  - kind: CONCEPT
+    title: Namespaces — what it can SEE
+    label: Namespaces
+    body: >
+      **Namespaces** give a process its own private view of the system. A
+      separate PID namespace means it sees its own process tree; a network
+      namespace gives it its own interfaces and IP.
+    callout:
+      kind: KEY IDEA
+      text: Same kernel, separate views. That's why it feels like its own little machine.
+
+  - kind: CONCEPT
+    title: More namespaces, more isolation
+    label: More
+    body: >
+      Mount namespace → its own filesystem (the image). User namespace → its
+      "root" can map to a harmless host user. Stack them and the process is
+      sealed off, cheaply.
+
+  - kind: CONCEPT
+    title: cgroups — what it can USE
+    label: cgroups
+    body: >
+      **Control groups** cap resources: CPU shares, memory, disk I/O, number of
+      processes. This is what `--memory` and `--cpus` actually configure.
+    callout:
+      kind: REMEMBER
+      text: Namespaces = isolation (what you see). cgroups = limits (what you use). Together = a container.
+
+quiz:
+  - question: Which kernel feature limits how much memory a container can use?
+    options: ["Namespaces", "cgroups", "The image", "runc"]
+    answer: 1
+    explanation: cgroups (control groups) enforce resource limits; namespaces handle isolation.
+  - question: Why does a container see only its own processes?
+    options:
+      - It has its own kernel
+      - A PID namespace gives it a private process tree
+      - Docker hides them in the CLI
+      - The host blocks ps
+    answer: 1
+    explanation: The PID namespace isolates the process tree — same kernel, separate view.

@@ -1,0 +1,87 @@
+title: The rest of the Dockerfile toolbox
+summary: COPY vs ADD, HEALTHCHECK, LABEL, EXPOSE, VOLUME — the ones people skip.
+minutes: 8
+difficulty: intermediate
+order: 7
+
+scene:
+  widget: codeWalk
+  filename: Dockerfile
+  lines:
+    - "FROM node:20-slim"
+    - "LABEL org.opencontainers.image.source=https://github.com/me/app"
+    - "WORKDIR /app"
+    - "COPY package*.json ./        # prefer COPY for local files"
+    - "ADD https://example.com/seed.tar.gz /seed/   # ADD fetches + untars"
+    - "RUN npm ci --omit=dev"
+    - "COPY . ."
+    - "EXPOSE 3000                   # documents the port"
+    - "VOLUME /app/uploads          # declares a data dir"
+    - "HEALTHCHECK --interval=30s CMD wget -qO- localhost:3000/health || exit 1"
+    - "CMD [\"node\", \"server.js\"]"
+  highlights:
+    - [3, 4]
+    - [1]
+    - [7, 8]
+    - [9]
+
+steps:
+  - kind: CONCEPT
+    title: COPY vs ADD
+    label: COPY/ADD
+    body: >
+      Both put files in the image. **Use `COPY`** for local files — it's
+      explicit. `ADD` has two extra tricks: it can fetch a URL and it
+      auto-extracts local tarballs. Those surprises are why COPY is the default
+      recommendation.
+    callout:
+      kind: RULE
+      text: COPY unless you specifically want ADD's URL fetch or tar auto-extract.
+
+  - kind: CONCEPT
+    title: LABEL — metadata
+    label: LABEL
+    body: >
+      `LABEL` attaches key/value metadata to the image — source repo, version,
+      maintainer. Standard `org.opencontainers.image.*` labels make your images
+      self-describing to tooling and registries.
+
+  - kind: CONCEPT
+    title: EXPOSE & VOLUME — documentation
+    label: EXPOSE/VOLUME
+    body: >
+      `EXPOSE` records which port the app listens on (it does **not** publish it
+      — you still need `-p`). `VOLUME` marks a path as holding data that should
+      live outside the container layer.
+    callout:
+      kind: NOTE
+      text: EXPOSE is a hint, not a firewall rule. Publishing still happens at `docker run -p`.
+
+  - kind: CONCEPT
+    title: HEALTHCHECK — is it actually OK?
+    label: HEALTHCHECK
+    body: >
+      `HEALTHCHECK` tells Docker how to test the app is alive, not just running.
+      `docker ps` then shows **(healthy)** / **(unhealthy)**, and orchestrators
+      use it to restart or hold traffic.
+    callout:
+      kind: PAYOFF
+      text: A good healthcheck turns "the container is up" into "the app actually works".
+
+quiz:
+  - question: Why prefer COPY over ADD for local files?
+    options:
+      - COPY is faster
+      - COPY is explicit; ADD can surprise you by fetching URLs or extracting tars
+      - ADD is deprecated
+      - COPY compresses better
+    answer: 1
+    explanation: ADD's implicit URL-fetch and auto-extract make builds less predictable; COPY just copies.
+  - question: Does EXPOSE publish a port to your host?
+    options:
+      - "Yes"
+      - "No — it only documents the port; -p publishes it"
+      - Only in Compose
+      - Only with --expose
+    answer: 1
+    explanation: EXPOSE is metadata/documentation; publishing to the host happens with -p at run time.

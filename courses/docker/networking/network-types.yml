@@ -1,0 +1,83 @@
+title: The network drivers
+summary: bridge, host, none, overlay — which wire your container plugs into.
+minutes: 7
+difficulty: intermediate
+order: 2
+
+scene:
+  widget: compare
+  left:
+    title: bridge (default)
+    items:
+      - A private virtual LAN on the host
+      - Containers get their own IPs
+      - Reach outside via NAT + published ports
+      - Isolated per user-defined network
+      - The everyday choice
+  right:
+    title: host / none / overlay
+    items:
+      - "host: shares the host's network, no isolation"
+      - "host: fastest, but port clashes are real"
+      - "none: no networking at all"
+      - "overlay: one network across many hosts"
+      - "overlay: how Swarm/clusters connect"
+  highlight:
+    - [0]
+    - [1, 2]
+    - [0, 2]
+    - [3, 4]
+
+steps:
+  - kind: CONCEPT
+    title: A container plugs into a driver
+    label: Drivers
+    body: >
+      Every container attaches to a **network driver**. The driver decides how it
+      gets an address and who it can reach. Docker ships a few; `bridge` is the
+      default.
+
+  - kind: CONCEPT
+    title: bridge — the default LAN
+    label: bridge
+    body: >
+      `bridge` puts the container on a private virtual network on your host, with
+      its own IP. It reaches the internet through NAT, and the outside reaches it
+      only through **published ports**. Custom bridge networks also give
+      name-based DNS.
+
+  - kind: CONCEPT
+    title: host & none — the extremes
+    label: host/none
+    body: >
+      `host` removes network isolation — the container shares the host's stack
+      directly (fast, but it can clash on ports). `none` gives no network at all,
+      for jobs that must stay offline.
+    callout:
+      kind: NOTE
+      text: "`host` is Linux-only in its pure form and trades isolation for raw speed."
+
+  - kind: CONCEPT
+    title: overlay — across machines
+    label: overlay
+    body: >
+      `overlay` spans **multiple hosts**, so containers on different machines join
+      one virtual network. This is what Docker Swarm (and clustered setups) use to
+      connect services cluster-wide.
+    callout:
+      kind: RULE OF THUMB
+      text: One host → bridge. Many hosts → overlay. Need raw speed and no isolation → host.
+
+quiz:
+  - question: Which driver lets containers on different physical hosts share one network?
+    options: ["bridge", "host", "none", "overlay"]
+    answer: 3
+    explanation: overlay networks span multiple hosts — the basis of Swarm/cluster networking.
+  - question: With the default bridge driver, how does the outside world reach a container?
+    options:
+      - Automatically
+      - Only through published ports (-p)
+      - Via the host driver
+      - It can't, ever
+    answer: 1
+    explanation: Bridge isolates containers; you publish ports with -p to expose them.

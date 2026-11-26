@@ -1,7 +1,7 @@
 {
   "title": "Docker from zero",
-  "tagline": "From your first container to production — run, build, secure and ship.",
-  "description": "A hands-on, build-it-yourself tour of Docker that goes from first principles all the way to production: what containers really are, how to run and build them well, where your data lives, how they network, how to secure and ship them, and how to keep it all tidy. Taught through animated terminals, build visualisations and diagrams you step through.",
+  "tagline": "Everything Docker — from your first container to production, the kernel up.",
+  "description": "A hands-on, build-it-yourself tour that aims to cover all of Docker: what containers really are and how the kernel makes them, running and building images well, advanced BuildKit tricks, data, networking, Compose, security, production, orchestration, and keeping it all tidy. Taught through animated terminals, build visualisations and diagrams you step through.",
   "level": "Beginner → Pro",
   "icon": "🐳",
   "accent": "blue",
@@ -9,13 +9,16 @@
   "order": 1,
   "chapters": [
     { "slug": "introduction", "title": "Getting started" },
+    { "slug": "under-the-hood", "title": "Under the hood" },
     { "slug": "containers", "title": "Images & containers" },
     { "slug": "dockerfile", "title": "Building images" },
+    { "slug": "advanced-builds", "title": "Advanced builds" },
     { "slug": "data", "title": "Data & volumes" },
     { "slug": "networking", "title": "Networking" },
     { "slug": "compose", "title": "Docker Compose" },
     { "slug": "security", "title": "Securing containers" },
     { "slug": "production", "title": "Going to production" },
+    { "slug": "beyond", "title": "Beyond one host" },
     { "slug": "operating", "title": "Operating & debugging" }
   ]
 }

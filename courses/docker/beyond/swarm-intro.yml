@@ -1,0 +1,71 @@
+title: Docker Swarm in a nutshell
+summary: Turn a few machines into one cluster, built into Docker.
+minutes: 8
+difficulty: advanced
+order: 1
+
+scene:
+  widget: diagram
+  nodes:
+    - { id: mgr, label: manager, sub: desired state, x: 50, y: 18 }
+    - { id: w1, label: worker 1, sub: 2 replicas, x: 18, y: 72 }
+    - { id: w2, label: worker 2, sub: 2 replicas, x: 50, y: 72 }
+    - { id: w3, label: worker 3, sub: 1 replica, x: 82, y: 72 }
+  edges:
+    - [mgr, w1]
+    - [mgr, w2]
+    - [mgr, w3]
+  active:
+    - [mgr]
+    - [mgr, w1, w2, w3]
+    - [mgr, w1, w3]
+    - [mgr, w1, w2, w3]
+
+steps:
+  - kind: CONCEPT
+    title: One brain, many machines
+    label: Manager
+    body: >
+      `docker swarm init` turns a machine into a **manager** that holds the
+      *desired state* — "run 5 copies of web". Other machines `docker swarm join`
+      as **workers** that run containers.
+
+  - kind: CONCEPT
+    title: Declare a service
+    label: Service
+    body: >
+      You don't start containers by hand — you declare a **service**:
+      `docker service create --replicas 5 web`. The manager spreads those 5
+      replicas (called tasks) across the workers.
+    callout:
+      kind: KEY IDEA
+      text: You describe the end state; Swarm figures out where each replica runs.
+
+  - kind: CONCEPT
+    title: Self-healing
+    label: Self-heals
+    body: >
+      A worker dies and its replicas vanish? The manager notices the gap between
+      desired (5) and actual (3) and **reschedules** the missing ones onto healthy
+      workers. No pager needed.
+
+  - kind: CONCEPT
+    title: Stacks = Compose for clusters
+    label: Stacks
+    body: >
+      `docker stack deploy -c compose.yaml myapp` deploys a whole Compose file to
+      the swarm as services. Same YAML you already know, now across many hosts
+      with built-in load balancing.
+    callout:
+      kind: NICE
+      text: Swarm is simple and ships with Docker — a gentle first taste of orchestration.
+
+quiz:
+  - question: What does a Swarm manager do when a worker fails?
+    options:
+      - Nothing
+      - Reschedules the lost replicas onto healthy workers to match desired state
+      - Emails you
+      - Shuts down the service
+    answer: 1
+    explanation: Swarm continuously reconciles actual vs desired state, rescheduling lost replicas.

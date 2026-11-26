@@ -1,0 +1,74 @@
+title: BuildKit & cache mounts
+summary: The modern build engine, and how to cache your package downloads.
+minutes: 8
+difficulty: advanced
+order: 1
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: DOCKER_BUILDKIT=1 docker build .
+      out: |
+        [+] Building 3.2s (12/12) FINISHED
+         => [internal] load build definition
+         => [4/6] RUN --mount=type=cache,target=/root/.npm npm ci   CACHED
+    - cmd: "# in the Dockerfile:"
+      out: |
+        RUN --mount=type=cache,target=/root/.npm \
+            npm ci
+    - cmd: "# build secret, never written to a layer:"
+      out: |
+        RUN --mount=type=secret,id=npmrc,target=/root/.npmrc \
+            npm ci
+    - cmd: docker buildx build --platform linux/amd64,linux/arm64 .
+      out: |
+        => exporting manifest list   (one tag, two architectures)
+
+steps:
+  - kind: CONCEPT
+    title: BuildKit is the new engine
+    label: BuildKit
+    body: >
+      Modern Docker builds with **BuildKit** by default — it builds independent
+      stages in parallel, skips unused ones, and shows that clean `[+] Building`
+      output. It unlocks `RUN --mount`, which classic builds can't do.
+
+  - kind: CONCEPT
+    title: Cache mounts speed up installs
+    label: Cache mount
+    body: >
+      `RUN --mount=type=cache,target=/root/.npm` keeps your package manager's
+      **download cache** between builds — even when the layer itself rebuilds. npm
+      / pip / apt stop re-downloading the same packages.
+    callout:
+      kind: KEY IDEA
+      text: Layer cache reuses whole layers; a cache mount reuses a folder *across* rebuilds of a layer.
+
+  - kind: CONCEPT
+    title: Secret mounts for private deps
+    label: Secret mount
+    body: >
+      `RUN --mount=type=secret` exposes a credential for just that command and
+      never writes it to a layer. This is the right way to use a private npm token
+      or SSH key at build time.
+
+  - kind: CONCEPT
+    title: Build cache you can share
+    label: Shared cache
+    body: >
+      BuildKit can export/import its cache to a registry
+      (`--cache-to`, `--cache-from`), so your CI runners share a warm cache and
+      builds stay fast even on fresh machines.
+    callout:
+      kind: TRY
+      text: Add a cache mount to your slowest RUN line. It's often the biggest single build speed-up.
+
+quiz:
+  - question: What does a `--mount=type=cache` give you that layer caching doesn't?
+    options:
+      - A smaller image
+      - A persistent folder (like a download cache) kept even when the layer rebuilds
+      - Faster networking
+      - Multi-platform builds
+    answer: 1
+    explanation: Cache mounts persist a directory across rebuilds of a layer — ideal for package-manager caches.

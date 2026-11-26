@@ -1,0 +1,80 @@
+title: ARG vs ENV
+summary: Build-time inputs vs run-time variables — and a secret leak to avoid.
+minutes: 6
+difficulty: intermediate
+order: 6
+
+scene:
+  widget: compare
+  left:
+    title: ARG
+    items:
+      - Available only during build
+      - Set with --build-arg KEY=val
+      - Gone from the final image's env
+      - Good for versions, build flags
+      - "ARG NODE_VERSION=20"
+  right:
+    title: ENV
+    items:
+      - Available at build AND run time
+      - Baked into the image
+      - Visible via docker inspect
+      - Good for app config defaults
+      - "ENV PORT=3000"
+  highlight:
+    - [0]
+    - [1, 2]
+    - [3]
+    - [4]
+
+steps:
+  - kind: CONCEPT
+    title: Both set variables, at different times
+    label: Both
+    body: >
+      `ARG` and `ENV` both define variables in a Dockerfile. The difference is
+      **when** they exist and whether they survive into the running container.
+
+  - kind: CONCEPT
+    title: ARG lives only during build
+    label: ARG
+    body: >
+      `ARG` values exist while the image builds and then vanish. Pass them with
+      `--build-arg`. Use them for things like a base version or a feature flag
+      that shouldn't follow the image around.
+
+  - kind: CONCEPT
+    title: ENV follows the image everywhere
+    label: ENV
+    body: >
+      `ENV` is baked in and available at run time to your app. It's the default
+      config travelling with the image — overridable at `docker run` with `-e`.
+    callout:
+      kind: KEY IDEA
+      text: ARG = build-time only. ENV = baked in, readable at run time.
+
+  - kind: CAUTION
+    title: Neither is for secrets
+    label: Not secrets
+    body: >
+      A secret passed as `--build-arg` can still show up in image history, and
+      `ENV` secrets are plainly visible via `docker inspect`. For real secrets use
+      BuildKit `--secret` (build) or runtime injection.
+    callout:
+      kind: SECURITY
+      text: "`docker history --no-trunc` can reveal build args. Don't pass tokens that way."
+
+quiz:
+  - question: You need an API key available to the running app. Which fits best (ignoring secrecy)?
+    options: ["ARG", "ENV", "LABEL", "RUN"]
+    answer: 1
+    explanation: ENV is readable at run time. (For secrets, inject at runtime rather than baking in.)
+  - question: Where is an ARG value after the build finishes?
+    options:
+      - In the container's environment
+      - Gone — it existed only during build
+      - In a volume
+      - In the registry
+    answer: 1
+    explanation: ARG is build-time only; it isn't part of the final image's environment.

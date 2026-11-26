@@ -1,0 +1,71 @@
+title: Tags, digests & latest
+summary: Why "latest" lies, and how digests pin an image for real.
+minutes: 7
+difficulty: beginner
+order: 5
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker images
+      out: |
+        REPOSITORY   TAG       IMAGE ID       SIZE
+        nginx        latest    a1b2c3d4e5f6   187MB
+        nginx        1.27      a1b2c3d4e5f6   187MB
+        myapp        1.4.2     9f8e7d6c5b4a   96MB
+    - cmd: docker pull nginx@sha256:9f6ad537c846…
+      out: |
+        Status: Image is up to date for nginx@sha256:9f6ad537c846…
+    - cmd: docker tag myapp:1.4.2 myapp:stable
+      out: |
+        (same image id, new name — tags are just labels)
+    - cmd: docker inspect --format '{{index .RepoDigests 0}}' nginx:1.27
+      out: |
+        nginx@sha256:9f6ad537c846a6…   ← the immutable content address
+
+steps:
+  - kind: CONCEPT
+    title: A tag is a movable label
+    label: Tags
+    body: >
+      `nginx:1.27` is a **tag** — a human name pointing at an image id. Notice
+      `latest` and `1.27` can share the same id. Tags can be re-pointed at any
+      time by whoever owns the repo.
+
+  - kind: PROBLEM
+    title: "“latest” is not a version"
+    label: latest lies
+    body: >
+      `latest` is just the default tag, not "the newest" in any guaranteed sense.
+      It moves. Pull `:latest` today and tomorrow and you may get different bytes.
+    callout:
+      kind: GOTCHA
+      text: "Pinning to `:latest` in production means your deploy isn't reproducible."
+
+  - kind: CONCEPT
+    title: Digests pin the exact bytes
+    label: Digests
+    body: >
+      A **digest** `@sha256:…` is the content hash of the image. `nginx@sha256:…`
+      always means the *exact same* image, forever. That's a real pin.
+
+  - kind: CONCEPT
+    title: Tags are cheap labels
+    label: Re-tag
+    body: >
+      `docker tag` just adds another name to the same image id — no copy, no
+      rebuild. Great for promoting an image (`1.4.2` → `stable`) without touching
+      its contents.
+    callout:
+      kind: BEST PRACTICE
+      text: Tag for humans, deploy by digest when reproducibility really matters.
+
+quiz:
+  - question: What does an image digest (@sha256:…) guarantee?
+    options:
+      - The newest version
+      - The exact same image bytes every time
+      - A smaller image
+      - A signed image
+    answer: 1
+    explanation: A digest is a content hash — it always refers to the identical image, unlike a movable tag.

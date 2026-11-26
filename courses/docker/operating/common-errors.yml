@@ -1,0 +1,85 @@
+title: Errors you'll actually hit
+summary: Five classic Docker errors, decoded and fixed.
+minutes: 9
+difficulty: beginner
+order: 2
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker run -p 8080:80 nginx
+      out: |
+        Error: bind: address already in use
+        → something else owns host port 8080. Use another: -p 8081:80
+    - cmd: docker run myapp
+      out: |
+        exec /app/start.sh: permission denied
+        → not executable. chmod +x, or use exec-form CMD ["node","server.js"]
+    - cmd: docker logs api
+      out: |
+        Error: connect ECONNREFUSED db:5432
+        → wrong network or name. Same network? Is it "db"? Healthy yet?
+    - cmd: docker build .
+      out: |
+        no space left on device
+        → reclaim: docker system df, then docker system prune
+    - cmd: docker run myarmimage
+      out: |
+        exec format error
+        → image built for a different CPU. Rebuild with buildx --platform
+
+steps:
+  - kind: ERROR
+    title: "“address already in use”"
+    label: port in use
+    body: >
+      The host port in your `-p` is taken — by another container or a local
+      process. Find it (`lsof -i :8080`) or just map a different host port:
+      `-p 8081:80`.
+
+  - kind: ERROR
+    title: "“permission denied” / “exec format error”"
+    label: exec errors
+    body: >
+      **permission denied**: the entry script isn't executable — `chmod +x` it, or
+      use the exec-form `CMD`. **exec format error**: the image is for a different
+      CPU — rebuild with `buildx --platform`.
+    callout:
+      kind: TIE-IN
+      text: That exec format error is exactly the arm64/amd64 mismatch from the multi-platform lesson.
+
+  - kind: ERROR
+    title: "“connection refused” between containers"
+    label: can't connect
+    body: >
+      Usually networking: are both containers on the **same user-defined
+      network**? Are you using the **container name** as the host? Has the target
+      actually become healthy yet (vs just started)?
+
+  - kind: ERROR
+    title: "“no space left on device”"
+    label: out of disk
+    body: >
+      Docker images and build cache fill disks fast. `docker system df` to see the
+      damage, then `docker system prune` (carefully — mind `--volumes`).
+    callout:
+      kind: METHOD
+      text: Exit code + `docker logs` + the error string usually point straight at the fix.
+
+quiz:
+  - question: "`docker run -p 8080:80 nginx` → \"address already in use\". Quickest fix?"
+    options:
+      - Reboot
+      - Map a different host port, e.g. -p 8081:80
+      - Reinstall Docker
+      - Remove the image
+    answer: 1
+    explanation: The host port is taken; pick a free one (or free the port).
+  - question: "You see \"exec format error\" running an image. Likely cause?"
+    options:
+      - Corrupt download
+      - The image was built for a different CPU architecture
+      - Missing volume
+      - Wrong password
+    answer: 1
+    explanation: Architecture mismatch (e.g. arm64 image on amd64). Rebuild multi-platform with buildx.

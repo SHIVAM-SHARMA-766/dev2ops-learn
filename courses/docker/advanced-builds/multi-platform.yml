@@ -1,0 +1,63 @@
+title: One image, many CPUs
+summary: Build for amd64 and arm64 from a single command.
+minutes: 7
+difficulty: advanced
+order: 2
+
+scene:
+  widget: flow
+  nodes:
+    - { id: src, label: Dockerfile, sub: one source, x: 12, y: 50 }
+    - { id: buildx, label: buildx, sub: --platform, x: 40, y: 50 }
+    - { id: amd, label: amd64, sub: Intel/AMD, x: 72, y: 28 }
+    - { id: arm, label: arm64, sub: Apple/Pi/Graviton, x: 72, y: 72 }
+    - { id: manifest, label: one tag, sub: manifest list, x: 94, y: 50 }
+  path: [src, buildx, amd, manifest]
+
+steps:
+  - kind: PROBLEM
+    title: Your laptop isn't the server's CPU
+    label: The problem
+    body: >
+      You build on an Apple-silicon (arm64) Mac but deploy to amd64 servers — or
+      the other way round. An image built for one CPU won't run on the other.
+
+  - kind: CONCEPT
+    title: buildx builds for many
+    label: buildx
+    body: >
+      `docker buildx build --platform linux/amd64,linux/arm64` builds the **same
+      Dockerfile** for several architectures in one go, using emulation
+      (QEMU) or remote builders.
+
+  - kind: CONCEPT
+    title: One tag covers both
+    label: Manifest list
+    body: >
+      The result is a **manifest list** under a single tag. When a machine pulls
+      it, the registry hands over the right architecture automatically. Users
+      never think about CPU.
+    callout:
+      kind: KEY IDEA
+      text: One `myapp:1.4.2` tag, multiple architectures inside — the client gets the one it needs.
+
+  - kind: TIP
+    title: Keep it fast
+    label: Keep it fast
+    body: >
+      Emulated builds are slow; native or remote builders are much faster. In CI,
+      a buildx builder plus a shared cache gives quick multi-arch images on every
+      push.
+    callout:
+      kind: BONUS
+      text: "`docker buildx imagetools inspect myapp:1.4.2` shows every architecture in the tag."
+
+quiz:
+  - question: What is a manifest list?
+    options:
+      - A list of Dockerfile instructions
+      - One tag that points at per-architecture images
+      - A changelog
+      - A layer cache
+    answer: 1
+    explanation: A manifest list lets a single tag serve the correct image for each CPU architecture.

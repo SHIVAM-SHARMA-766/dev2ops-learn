@@ -1,0 +1,70 @@
+title: Move images without a registry
+summary: save/load, export/import, and why commit is a trap.
+minutes: 8
+difficulty: intermediate
+order: 6
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker save myapp:1.4.2 -o myapp.tar
+      out: |
+        (image + all its layers + metadata → a single tar file)
+    - cmd: docker load -i myapp.tar
+      out: |
+        Loaded image: myapp:1.4.2
+    - cmd: docker export web -o web-fs.tar
+      out: |
+        (a running container's flat filesystem — no layers, no history)
+    - cmd: docker commit web myapp:hotfix
+      out: |
+        sha256:4d5e6f…   ⚠ snapshot of a running container — not reproducible
+
+steps:
+  - kind: CONCEPT
+    title: save / load — whole images
+    label: save/load
+    body: >
+      `docker save` writes an **image** (all layers + metadata) to a tar you can
+      copy anywhere. `docker load` reads it back. Perfect for air-gapped machines
+      with no registry access.
+
+  - kind: CONCEPT
+    title: export / import — flat filesystems
+    label: export/import
+    body: >
+      `docker export` dumps a **container's** filesystem as one flat tar — no
+      layers, no history. `import` turns a filesystem tar back into a
+      single-layer image. Different job from save/load.
+    callout:
+      kind: REMEMBER
+      text: save/load = images (keep layers). export/import = container filesystems (flatten).
+
+  - kind: CAUTION
+    title: commit is a trap
+    label: commit ⚠
+    body: >
+      `docker commit` snapshots a **running** container into an image. It feels
+      handy for a quick fix — but nobody can reproduce it, and you've no idea
+      what's inside. It's the opposite of a Dockerfile.
+    callout:
+      kind: RULE
+      text: Changes belong in the Dockerfile, in git — not in a hand-committed snapshot.
+
+  - kind: TIP
+    title: When each one earns its place
+    label: When
+    body: >
+      No registry and need to ship an image? `save`/`load`. Grab a filesystem for
+      forensics? `export`. Quick throwaway experiment you'll redo properly later?
+      `commit` — then go write the Dockerfile.
+
+quiz:
+  - question: What's the problem with building images via `docker commit`?
+    options:
+      - It's slow
+      - The result isn't reproducible and its contents are opaque
+      - It needs a registry
+      - It deletes the container
+    answer: 1
+    explanation: A committed image has no recorded recipe — unlike a Dockerfile, no one can reproduce or audit it.

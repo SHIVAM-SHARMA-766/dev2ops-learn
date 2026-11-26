@@ -1,0 +1,71 @@
+title: Custom networks & DNS
+summary: Put containers on your own network and let them find each other by name.
+minutes: 7
+difficulty: intermediate
+order: 3
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker network create app-net
+      out: |
+        b2c3d4e5f6a7…
+    - cmd: docker run -d --name db --network app-net postgres:16
+      out: |
+        9a8b7c6d…
+    - cmd: docker run -d --name api --network app-net myapi
+      out: |
+        1f2e3d4c…
+    - cmd: docker exec api ping -c1 db
+      out: |
+        PING db (172.20.0.2): 56 data bytes
+        64 bytes from 172.20.0.2: icmp_seq=0 ttl=64 time=0.12 ms
+    - cmd: docker network inspect app-net --format '{{range .Containers}}{{.Name}} {{end}}'
+      out: |
+        db api
+
+steps:
+  - kind: CONCEPT
+    title: Make your own network
+    label: create
+    body: >
+      `docker network create app-net` makes a user-defined bridge network. Unlike
+      the default bridge, it comes with **automatic DNS** between its members.
+
+  - kind: CONCEPT
+    title: Attach containers to it
+    label: --network
+    body: >
+      Run containers with `--network app-net` and they share that private LAN.
+      Nothing is published to the host — this traffic stays between containers.
+
+  - kind: CONCEPT
+    title: They resolve each other by name
+    label: DNS
+    body: >
+      `api` can reach `db` just by the name **db** — Docker's embedded DNS maps
+      container names to their current IPs. No hard-coded addresses, no `-p`.
+    callout:
+      kind: KEY IDEA
+      text: Same user-defined network + container name = built-in service discovery.
+
+  - kind: CONCEPT
+    title: Inspect and segment
+    label: inspect
+    body: >
+      `docker network inspect` shows who's attached and their IPs. Put unrelated
+      apps on **separate** networks so they can't talk — simple, effective
+      isolation.
+    callout:
+      kind: COMPOSE
+      text: Compose creates a dedicated network per project automatically — this is that, by hand.
+
+quiz:
+  - question: On a user-defined network, how does `api` reach `db`?
+    options:
+      - By the IP you hard-code
+      - By the container name "db" via built-in DNS
+      - Through a published port
+      - It can't
+    answer: 1
+    explanation: User-defined networks give automatic name-based DNS between containers.
