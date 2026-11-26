@@ -1,0 +1,12 @@
+{
+  "title": "dev2ops learn",
+  "description": "Free, hands-on DevOps courses: short lessons, real commands and a quiz at the end of each.",
+  "url": "https://learn.dev2ops.in",
+  "author": {
+    "name": "Shivam Sharma",
+    "url": "https://portfolio.dev2ops.in"
+  },
+  "github": "https://github.com/SHIVAM-SHARMA-766/dev2ops-learn",
+  "acmeEmail": "developer.shivamsharma@gmail.com",
+  "previousHosts": []
+}

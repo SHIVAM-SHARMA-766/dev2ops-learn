@@ -1,0 +1,20 @@
+---
+import Default from '@astrojs/starlight/components/Head.astro';
+import { PALETTES } from '../lib/site';
+const palettes = PALETTES.map((p) => p.id);
+---
+<Default />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" />
+<script is:inline define:vars={{ palettes }}>
+  // Before paint, so the saved accent never flashes
+  (function () {
+    var pal = palettes[0];
+    try {
+      var saved = (JSON.parse(localStorage.getItem('dl.prefs.v1')) || {}).palette;
+      if (saved && palettes.indexOf(saved) !== -1) pal = saved;
+    } catch (e) {}
+    document.documentElement.dataset.palette = pal;
+  })();
+</script>
