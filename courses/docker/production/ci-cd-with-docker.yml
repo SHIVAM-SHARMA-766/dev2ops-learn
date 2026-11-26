@@ -1,0 +1,78 @@
+title: Docker in a CI/CD pipeline
+summary: Follow an image from a git push all the way to running in production.
+minutes: 8
+difficulty: intermediate
+order: 3
+
+scene:
+  widget: flow
+  nodes:
+    - { id: push, label: git push, sub: a commit, x: 10, y: 50 }
+    - { id: build, label: docker build, sub: CI runner, x: 32, y: 50 }
+    - { id: test, label: test, sub: run in container, x: 54, y: 50 }
+    - { id: registry, label: docker push, sub: registry, x: 76, y: 50 }
+    - { id: deploy, label: deploy, sub: pull & run, x: 94, y: 50 }
+  path: [push, build, test, registry, deploy]
+
+steps:
+  - kind: STEP
+    title: A commit kicks it off
+    label: push
+    body: >
+      You push to the main branch. CI wakes up with one job: turn this commit into
+      a running service — automatically, the same way every time.
+
+  - kind: STEP
+    title: Build the image
+    label: build
+    body: >
+      The runner runs `docker build`, tagged with the git SHA. Because the
+      Dockerfile pins versions and the cache is warm, the build is fast and
+      reproducible.
+
+  - kind: STEP
+    title: Test in a container
+    label: test
+    body: >
+      Run the test suite **inside** a container (or `docker compose up` a test
+      stack with a throwaway database). What passes in CI is the exact image
+      you'll ship — no "works on my machine".
+    callout:
+      kind: KEY IDEA
+      text: The artefact you test is byte-for-byte the artefact you deploy. That's the whole point.
+
+  - kind: STEP
+    title: Push to the registry
+    label: push image
+    body: >
+      Tests green → `docker push myorg/myapp:<sha>`. The image now lives in the
+      registry, ready for any environment to pull.
+
+  - kind: STEP
+    title: Deploy = pull & run
+    label: deploy
+    body: >
+      The server pulls that exact tag and restarts the container (compose,
+      Swarm, or Kubernetes rolls it). Same bytes that passed CI are now serving
+      traffic.
+    callout:
+      kind: ROLLBACK
+      text: Something's wrong? Re-deploy the previous SHA tag. The old image is still in the registry.
+
+quiz:
+  - question: What's the core advantage of building the image in CI?
+    options:
+      - It's cheaper
+      - The exact image that passes tests is the one deployed
+      - It skips the registry
+      - It avoids Dockerfiles
+    answer: 1
+    explanation: Test and deploy the same immutable artefact — reproducible from commit to production.
+  - question: How do you roll back a bad deploy?
+    options:
+      - Rebuild from scratch
+      - Re-deploy the previous version's image tag from the registry
+      - Delete the container
+      - Edit the running container
+    answer: 1
+    explanation: Immutable tags make rollback a redeploy of the known-good previous image.

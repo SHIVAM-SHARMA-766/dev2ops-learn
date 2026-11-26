@@ -1,0 +1,76 @@
+title: Resource limits
+summary: Stop one container from eating the whole machine.
+minutes: 7
+difficulty: intermediate
+order: 1
+
+scene:
+  widget: codeWalk
+  filename: run & compose
+  lines:
+    - "# at run time"
+    - "docker run -d \\"
+    - "  --memory=512m \\"
+    - "  --cpus=1.5 \\"
+    - "  --pids-limit=200 \\"
+    - "  myapp"
+    - ""
+    - "# or in compose.yaml"
+    - "services:"
+    - "  app:"
+    - "    deploy:"
+    - "      resources:"
+    - "        limits: { memory: 512M, cpus: \"1.5\" }"
+  highlights:
+    - [1, 2]
+    - [3]
+    - [4]
+    - [10, 11, 12]
+
+steps:
+  - kind: PROBLEM
+    title: The noisy neighbour
+    label: The problem
+    body: >
+      By default a container can use **all** the host's memory and CPU. One leaky
+      service can starve everything else on the box — the classic "noisy
+      neighbour".
+
+  - kind: CONCEPT
+    title: Cap memory
+    label: --memory
+    body: >
+      `--memory=512m` hard-caps RAM. Go over and the kernel's OOM killer stops
+      **that** container — not your whole machine. Pair with a sensible app heap
+      size.
+    callout:
+      kind: KEY IDEA
+      text: A capped container fails alone. An uncapped one can take the host down with it.
+
+  - kind: CONCEPT
+    title: Cap CPU
+    label: --cpus
+    body: >
+      `--cpus=1.5` limits it to one and a half cores' worth of time. The container
+      still *sees* all cores, but can't hog them.
+
+  - kind: CONCEPT
+    title: Declare it in Compose
+    label: Compose
+    body: >
+      In production you set the same limits declaratively under
+      `deploy.resources.limits`, so every environment runs with the same guard
+      rails — no one forgets a flag.
+    callout:
+      kind: BONUS
+      text: "`--pids-limit` caps processes too, blunting fork-bombs and runaway spawns."
+
+quiz:
+  - question: What happens when a container with --memory=512m exceeds it?
+    options:
+      - The host crashes
+      - That container is OOM-killed, the host stays up
+      - It swaps forever
+      - Docker ignores the limit
+    answer: 1
+    explanation: The limit confines the damage — only that container is killed, protecting the host.

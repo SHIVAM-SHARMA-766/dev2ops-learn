@@ -14,6 +14,7 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
   const [step, setStep] = useState(0);
   const [done, setDone] = useState({}); // "chapter/slug" -> true, hydrated on client
   const [toast, setToast] = useState(null);
+  const [playing, setPlaying] = useState(false);
   const current = steps[step] || {};
 
   const go = useCallback(
@@ -48,16 +49,25 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
     }
   }, [step, total, course.slug, course.title, lesson.chapter, lesson.slug, next]);
 
-  // keyboard: ← / → (and h / l) move between steps
+  // keyboard: ← / → (and h / l) move between steps; space toggles auto-play
   useEffect(() => {
     const onKey = (e) => {
       if (e.target instanceof HTMLInputElement) return;
-      if (e.key === 'ArrowRight' || e.key === 'l') { e.preventDefault(); go((s) => s + 1); }
-      else if (e.key === 'ArrowLeft' || e.key === 'h') { e.preventDefault(); go((s) => s - 1); }
+      if (e.key === 'ArrowRight' || e.key === 'l') { e.preventDefault(); setPlaying(false); go((s) => s + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'h') { e.preventDefault(); setPlaying(false); go((s) => s - 1); }
+      else if (e.key === ' ') { e.preventDefault(); setPlaying((p) => !p); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [go]);
+
+  // auto-play: advance a step on a timer, stop at the end
+  useEffect(() => {
+    if (!playing) return;
+    if (step >= total - 1) { setPlaying(false); return; }
+    const t = setTimeout(() => setStep((s) => Math.min(total - 1, s + 1)), 2600);
+    return () => clearTimeout(t);
+  }, [playing, step, total]);
 
   const scene = current.viz || lesson.scene; // per-step override, else lesson scene
   const doneCount = Object.keys(done).length;
@@ -130,7 +140,19 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
         </div>
 
         <div className="stage__timeline">
-          <div className="timeline__label mono">In this lesson <span>Step {step + 1} of {total}</span></div>
+          <div className="timeline__label mono">
+            <span className="timeline__labelleft">
+              <button
+                className="timeline__play"
+                onClick={() => (atLast ? (go(0), setPlaying(true)) : setPlaying((p) => !p))}
+                title={playing ? 'Pause (space)' : 'Play (space)'}
+              >
+                {playing ? '❚❚ Pause' : atLast ? '↺ Replay' : '▶ Play'}
+              </button>
+              In this lesson
+            </span>
+            <span>Step {step + 1} of {total}</span>
+          </div>
           <ol className="timeline__steps">
             {steps.map((s, i) => (
               <li key={i}>
@@ -186,7 +208,7 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
             </button>
           )}
         </div>
-        <div className="rail__hint mono">← → to step · click a step below</div>
+        <div className="rail__hint mono">← → step · space play/pause · click a step</div>
       </aside>
     </div>
   );

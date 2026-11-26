@@ -1,8 +1,8 @@
 {
   "title": "Docker from zero",
-  "tagline": "Containers from first principles — run, build, ship and debug real apps.",
-  "description": "A hands-on, build-it-yourself tour of Docker: what containers really are, how to run and build them, where your data lives, how they talk, and how to keep them tidy. Lots of fake terminals you can follow along in a real one.",
-  "level": "Beginner",
+  "tagline": "From your first container to production — run, build, secure and ship.",
+  "description": "A hands-on, build-it-yourself tour of Docker that goes from first principles all the way to production: what containers really are, how to run and build them well, where your data lives, how they network, how to secure and ship them, and how to keep it all tidy. Taught through animated terminals, build visualisations and diagrams you step through.",
+  "level": "Beginner → Pro",
   "icon": "🐳",
   "accent": "blue",
   "status": "published",
@@ -14,6 +14,8 @@
     { "slug": "data", "title": "Data & volumes" },
     { "slug": "networking", "title": "Networking" },
     { "slug": "compose", "title": "Docker Compose" },
+    { "slug": "security", "title": "Securing containers" },
+    { "slug": "production", "title": "Going to production" },
     { "slug": "operating", "title": "Operating & debugging" }
   ]
 }

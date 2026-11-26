@@ -1,0 +1,84 @@
+title: ENTRYPOINT vs CMD
+summary: The two that confuse everyone — settled for good.
+minutes: 7
+difficulty: intermediate
+order: 5
+
+scene:
+  widget: compare
+  left:
+    title: CMD
+    items:
+      - The default command/arguments
+      - Easily overridden at run time
+      - "docker run img OTHER → OTHER replaces it"
+      - Good for a default you expect to change
+      - "CMD [\"node\", \"server.js\"]"
+  right:
+    title: ENTRYPOINT
+    items:
+      - The fixed executable
+      - Not replaced by run arguments
+      - "docker run img --port 80 → appended as args"
+      - Good for wrapping one tool
+      - "ENTRYPOINT [\"nginx\", \"-g\", \"daemon off;\"]"
+  highlight:
+    - [0]
+    - [1, 2]
+    - [3]
+    - [4]
+
+steps:
+  - kind: CONCEPT
+    title: Both say "what runs"
+    label: Both
+    body: >
+      When a container starts, it runs one process. `CMD` and `ENTRYPOINT` both
+      describe that process — the difference is **what happens when you pass
+      arguments to `docker run`**.
+
+  - kind: CONCEPT
+    title: CMD is a default
+    label: CMD
+    body: >
+      `CMD` sets a default that run-time arguments **replace**. `docker run myapp
+      bash` throws away the CMD and runs `bash` instead. Flexible, overridable.
+
+  - kind: CONCEPT
+    title: ENTRYPOINT is fixed
+    label: ENTRYPOINT
+    body: >
+      `ENTRYPOINT` is the command that always runs. Run-time arguments are
+      **appended** to it, not replaced. The image behaves like a single tool.
+    callout:
+      kind: PATTERN
+      text: Use them together — ENTRYPOINT the binary, CMD its default args. Then args override just the args.
+
+  - kind: NOTICE
+    title: Use the exec form
+    label: Exec form
+    body: >
+      Prefer the JSON array form `["nginx", "-g", "daemon off;"]` over a plain
+      string. The string form runs via a shell, which swallows signals — your
+      container won't stop cleanly on `docker stop`.
+    callout:
+      kind: GOTCHA
+      text: Shell form + no signal handling = a container that ignores Ctrl-C and takes 10s to die.
+
+quiz:
+  - question: "`docker run myimg --debug` where the image has ENTRYPOINT [\"myapp\"]. What runs?"
+    options:
+      - "--debug alone"
+      - "myapp --debug"
+      - nothing
+      - "myapp, ignoring --debug"
+    answer: 1
+    explanation: Run arguments are appended to ENTRYPOINT, so it runs `myapp --debug`.
+  - question: Why prefer the JSON/exec form?
+    options:
+      - It's shorter
+      - The process gets signals directly and stops cleanly
+      - It's required
+      - It runs faster
+    answer: 1
+    explanation: Exec form runs the binary as PID 1 directly, so docker stop's signal reaches it.

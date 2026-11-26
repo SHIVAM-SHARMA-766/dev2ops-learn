@@ -1,0 +1,72 @@
+title: Don't run as root
+summary: The single biggest container-hardening win, in four lines.
+minutes: 7
+difficulty: intermediate
+order: 1
+
+scene:
+  widget: codeWalk
+  filename: Dockerfile
+  lines:
+    - "FROM node:20-slim"
+    - "WORKDIR /app"
+    - "COPY --chown=app:app . ."
+    - "RUN npm ci --omit=dev"
+    - ""
+    - "# create and switch to a non-root user"
+    - "RUN useradd -r -u 1001 app"
+    - "USER app"
+    - ""
+    - "CMD [\"node\", \"server.js\"]"
+  highlights:
+    - [0]
+    - [5, 6]
+    - [7]
+    - [2]
+
+steps:
+  - kind: PROBLEM
+    title: Containers run as root by default
+    label: The risk
+    body: >
+      Unless you say otherwise, your process runs as **root inside the
+      container**. If an attacker breaks your app, they're root — and a container
+      escape then means root-ish access to the host.
+
+  - kind: CONCEPT
+    title: Make a real user
+    label: useradd
+    body: >
+      Create an unprivileged user in the image. `-r` makes it a system account,
+      `-u 1001` pins a stable id (handy for volume permissions).
+
+  - kind: CONCEPT
+    title: Switch to it
+    label: USER
+    body: >
+      `USER app` means every later instruction — and the running container —
+      executes as `app`, not root. If the app is compromised, the blast radius is
+      tiny.
+    callout:
+      kind: KEY IDEA
+      text: Least privilege — the process can only touch what `app` is allowed to.
+
+  - kind: CONCEPT
+    title: Own the files
+    label: --chown
+    body: >
+      `COPY --chown=app:app` makes the copied files belong to your user, so the
+      app can read (and, where needed, write) them without running as root.
+    callout:
+      kind: HARDEN MORE
+      text: Add `--read-only` and a `tmpfs` for /tmp at run time so even the filesystem is locked down.
+
+quiz:
+  - question: Why add a USER instruction?
+    options:
+      - To make builds faster
+      - So the process isn't root, limiting damage if it's compromised
+      - It's required by Docker
+      - To enable networking
+    answer: 1
+    explanation: Running as a non-root user is least privilege — a compromised app can do far less.

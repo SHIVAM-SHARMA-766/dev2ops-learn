@@ -7,6 +7,8 @@ import CodeWalk from './CodeWalk.jsx';
 import Diagram from './Diagram.jsx';
 import TerminalReplay from './TerminalReplay.jsx';
 import Compare from './Compare.jsx';
+import Flow from './Flow.jsx';
+import BuildCache from './BuildCache.jsx';
 
 const REGISTRY = {
   stagedReveal: StagedReveal,
@@ -14,6 +16,8 @@ const REGISTRY = {
   diagram: Diagram,
   terminalReplay: TerminalReplay,
   compare: Compare,
+  flow: Flow,
+  buildCache: BuildCache,
 };
 
 export function Scene({ scene, activeStep, steps }) {

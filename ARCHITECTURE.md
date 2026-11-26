@@ -72,12 +72,23 @@ Current widgets:
 
 - **`stagedReveal`** — a column of items revealed/highlighted one per step.
 - **`codeWalk`** — a code block whose lines light up per step (`lines`,
-  `highlights[stepIndex]`).
+  `highlights[stepIndex]`), with a copy button.
 - **`diagram`** — a node/edge graph where `active[stepIndex]` lights nodes.
+- **`terminalReplay`** — a fake terminal that reveals command/output blocks per
+  step, with a copy button.
+- **`compare`** — two columns (before/after, A vs B) with optional per-step row
+  highlighting.
+- **`flow`** — a node graph with a dot that travels a `path` one hop per step
+  (request/packet/pipeline flow); the dot animates via CSS as the step changes.
+- **`buildCache`** — an animated `docker build` where each layer shows CACHED /
+  BUILDING (spinner) / DONE per step; `states[stepIndex]` drives it.
 
 Add a component and register it, and every course can use it. Bespoke,
 hand-animated scenes for a flagship lesson can be added as their own widget the
 same way.
+
+The player also has **auto-play**: a Play/Replay control (and the space bar)
+auto-advances steps on a timer, so a lesson can play like an animation.
 
 ## Progress
 

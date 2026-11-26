@@ -1,0 +1,79 @@
+title: Watch the build cache work
+summary: See which layers rebuild and which fly past as CACHED.
+minutes: 8
+difficulty: intermediate
+order: 4
+
+scene:
+  widget: buildCache
+  layers:
+    - "FROM node:20-slim"
+    - "WORKDIR /app"
+    - "COPY package*.json ./"
+    - "RUN npm ci"
+    - "COPY . ."
+    - "RUN npm run build"
+  states:
+    - [done, done, done, done, done, done]
+    - [cached, cached, cached, cached, building, building]
+    - [cached, cached, building, building, building, building]
+    - [building, building, building, building, building, building]
+
+steps:
+  - kind: CONCEPT
+    title: The first build is slow
+    label: First build
+    body: >
+      Nothing is cached yet, so **every** layer runs — including the slow
+      `npm ci`. That's expected the first time. Docker saves each finished layer.
+
+  - kind: CONCEPT
+    title: Change app code → almost all cached
+    label: Edit code
+    body: >
+      You tweak a source file and rebuild. Docker walks top-down and reuses every
+      **CACHED** layer until the first thing that changed — here, `COPY . .`. Only
+      the last two layers rebuild. Fast.
+    callout:
+      kind: WHY
+      text: Your dependencies didn't change, so the expensive `npm ci` layer is reused untouched.
+
+  - kind: CONCEPT
+    title: Change a dependency → more rebuilds
+    label: Edit deps
+    body: >
+      Edit `package.json` and the `COPY package*.json` layer changes — so
+      everything **below** it (including `npm ci`) must rebuild. The cache is only
+      valid up to the first changed layer.
+    callout:
+      kind: KEY IDEA
+      text: A layer busts the cache for itself and everything after it — never before it.
+
+  - kind: CONCEPT
+    title: Change the base → full rebuild
+    label: Edit base
+    body: >
+      Bump `FROM node:20-slim` and the very first layer changes, so the whole
+      thing rebuilds from scratch. This is why the base image sits at the top and
+      changes rarely.
+    callout:
+      kind: TAKEAWAY
+      text: Order your Dockerfile least-changing first. The cache rewards you on every build.
+
+quiz:
+  - question: You change one line of source code (not dependencies). What rebuilds?
+    options:
+      - The whole image
+      - Only the layers at/after the COPY of your source
+      - Nothing
+      - Only the base layer
+    answer: 1
+    explanation: Cache is reused down to the first changed layer; everything below it rebuilds.
+  - question: Why put `RUN npm ci` before `COPY . .`?
+    options:
+      - It looks cleaner
+      - So the slow install stays cached when only source changes
+      - npm requires it
+      - To expose a port
+    answer: 1
+    explanation: Source changes often; keeping the install above it means the install layer stays cached.

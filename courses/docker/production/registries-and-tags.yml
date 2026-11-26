@@ -1,0 +1,71 @@
+title: Registries & tags
+summary: Push images others can pull — and tag them so you can roll back.
+minutes: 8
+difficulty: intermediate
+order: 2
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker build -t myorg/myapp:1.4.2 -t myorg/myapp:latest .
+      out: |
+        => exporting to image
+        => naming to docker.io/myorg/myapp:1.4.2
+        => naming to docker.io/myorg/myapp:latest
+    - cmd: docker login
+      out: |
+        Login Succeeded
+    - cmd: docker push myorg/myapp:1.4.2
+      out: |
+        1.4.2: digest: sha256:7b2e… size: 1789
+    - cmd: docker pull myorg/myapp:1.4.2
+      out: |
+        1.4.2: Pulling from myorg/myapp
+        Status: Downloaded newer image for myorg/myapp:1.4.2
+
+steps:
+  - kind: CONCEPT
+    title: An image name is a coordinate
+    label: Naming
+    body: >
+      `docker.io/myorg/myapp:1.4.2` = registry / repository : tag. Leave the
+      registry off and Docker assumes Docker Hub. The tag is how you ask for a
+      specific version.
+
+  - kind: CONCEPT
+    title: Tag with a real version
+    label: Tags
+    body: >
+      Tag every build with an immutable version (`1.4.2`, a git SHA) **and**
+      maybe `latest`. The version tag is what lets you redeploy or roll back to an
+      exact image.
+    callout:
+      kind: ANTI-PATTERN
+      text: Deploying `:latest` to prod — you can't tell what's running or roll back. Pin a version.
+
+  - kind: CONCEPT
+    title: Push to share
+    label: push
+    body: >
+      `docker login` then `docker push` uploads the image to the registry. Now any
+      machine — your server, a teammate, CI — can pull the exact same bytes.
+
+  - kind: CONCEPT
+    title: Pull to run
+    label: pull
+    body: >
+      On the server, `docker pull myorg/myapp:1.4.2` fetches that precise image.
+      Same digest everywhere — the reproducibility promise, kept end to end.
+    callout:
+      kind: TIP
+      text: Private registries (GHCR, ECR, Harbor) work the same way — just a different host in the name.
+
+quiz:
+  - question: Why avoid deploying the `:latest` tag to production?
+    options:
+      - It's slower
+      - You can't tell which version is running or roll back reliably
+      - It uses more disk
+      - Docker forbids it
+    answer: 1
+    explanation: "latest moves. Pinning an immutable version tag makes deploys reproducible and rollbacks possible."
