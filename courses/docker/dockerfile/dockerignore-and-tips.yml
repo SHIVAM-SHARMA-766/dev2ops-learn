@@ -1,0 +1,68 @@
+title: .dockerignore & good habits
+summary: Smaller context, faster builds, safer images.
+minutes: 6
+difficulty: beginner
+order: 3
+
+scene:
+  widget: codeWalk
+  filename: .dockerignore
+  lines:
+    - "node_modules"
+    - ".git"
+    - "*.log"
+    - ".env"
+    - "dist"
+    - "Dockerfile"
+    - "README.md"
+  highlights:
+    - [0]
+    - [1, 2]
+    - [3]
+    - [4, 5, 6]
+
+steps:
+  - kind: CONCEPT
+    title: Docker sends a "context"
+    label: Build context
+    body: >
+      When you run `docker build .`, Docker tars up the **whole folder** and
+      sends it to the daemon. A fat `node_modules` or `.git` makes every build
+      slow before a single instruction runs.
+
+  - kind: CONCEPT
+    title: Ignore the junk
+    label: node_modules
+    body: >
+      `.dockerignore` works like `.gitignore`. Dropping `node_modules` is the
+      biggest win — you reinstall deps inside the image anyway.
+
+  - kind: CAUTION
+    title: Keep secrets out
+    label: .env
+    body: >
+      Never let a `.env` or key file slip into the image. Ignore them explicitly.
+      Images get pushed to registries — treat them as public.
+    callout:
+      kind: SECURITY
+      text: Anything copied into a layer is recoverable later, even if a later layer deletes it.
+
+  - kind: TIP
+    title: A few more habits
+    label: Habits
+    body: >
+      Pin tags (`node:20-slim`, not `node:latest`) so builds are reproducible.
+      Run as a non-root user. Keep images small — fewer packages, fewer CVEs.
+    callout:
+      kind: CHECKLIST
+      text: small base · pinned tags · .dockerignore · no secrets · non-root user.
+
+quiz:
+  - question: What's the main reason to add node_modules to .dockerignore?
+    options:
+      - It breaks the build otherwise
+      - It bloats the build context and slows every build
+      - Docker can't read it
+      - It's required by npm
+    answer: 1
+    explanation: The whole context is sent to the daemon first; ignoring node_modules keeps that fast.

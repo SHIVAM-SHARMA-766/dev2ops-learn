@@ -1,0 +1,83 @@
+title: Running containers like a pro
+summary: The flags you'll actually use every day.
+minutes: 9
+difficulty: beginner
+order: 3
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker run -it ubuntu bash
+      out: |
+        root@3f9c:/# echo "I'm inside a container"
+        I'm inside a container
+        root@3f9c:/# exit
+    - cmd: docker run -d --name api -p 3000:3000 myapi
+      out: |
+        c0ffee1234abcd5678ef90…
+    - cmd: docker run --rm alpine echo "clean up after me"
+      out: |
+        clean up after me
+    - cmd: docker run -e NODE_ENV=production -d myapi
+      out: |
+        d1e2f3a4b5c6…
+    - cmd: docker run -d --restart unless-stopped nginx
+      out: |
+        a9b8c7d6e5f4…
+
+steps:
+  - kind: FLAG
+    title: Interactive shells — -it
+    label: "-it"
+    body: >
+      `-it` gives you an interactive terminal **inside** the container. Great for
+      poking around a base image: `docker run -it ubuntu bash`.
+
+  - kind: FLAG
+    title: Detached + named + ports
+    label: "-d -p"
+    body: >
+      The everyday combo: `-d` (background), `--name` (so you don't juggle random
+      ids) and `-p` (publish a port). This is how you run a service.
+
+  - kind: FLAG
+    title: Throwaway runs — --rm
+    label: "--rm"
+    body: >
+      `--rm` deletes the container the moment it exits. Perfect for one-off
+      commands so you don't pile up dead containers.
+    callout:
+      kind: TIP
+      text: "`docker run --rm -it node:20 node` gives you a throwaway Node REPL."
+
+  - kind: FLAG
+    title: Config via -e
+    label: "-e"
+    body: >
+      Pass environment variables with `-e KEY=value`. Twelve-factor style — the
+      same image behaves differently per environment, no rebuild needed.
+
+  - kind: FLAG
+    title: Keep it alive — --restart
+    label: "--restart"
+    body: >
+      `--restart unless-stopped` brings the container back after a crash or a
+      reboot. The simplest "keep my service up" you can get without an
+      orchestrator.
+    callout:
+      kind: REMEMBER
+      text: Flags go *before* the image name; anything after it is the command to run.
+
+quiz:
+  - question: Which flag deletes the container automatically when it stops?
+    options: ["--stop", "--rm", "-d", "--clean"]
+    answer: 1
+    explanation: "--rm removes the container on exit — ideal for one-off commands."
+  - question: Where do flags like -d and -p go?
+    options:
+      - After the image name
+      - Before the image name
+      - Anywhere
+      - In the Dockerfile
+    answer: 1
+    explanation: "docker run [flags] IMAGE [command] — flags before the image, command after."

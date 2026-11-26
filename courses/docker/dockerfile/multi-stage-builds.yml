@@ -1,0 +1,70 @@
+title: Multi-stage builds
+summary: Build in a fat image, ship a tiny one.
+minutes: 9
+difficulty: intermediate
+order: 2
+
+scene:
+  widget: codeWalk
+  filename: Dockerfile
+  lines:
+    - "# --- stage 1: build ---"
+    - "FROM node:20 AS build"
+    - "WORKDIR /app"
+    - "COPY package*.json ./"
+    - "RUN npm ci"
+    - "COPY . ."
+    - "RUN npm run build        # produces /app/dist"
+    - ""
+    - "# --- stage 2: run ---"
+    - "FROM nginx:alpine"
+    - "COPY --from=build /app/dist /usr/share/nginx/html"
+  highlights:
+    - [0, 1]
+    - [2, 3, 4, 5, 6]
+    - [8, 9]
+    - [10]
+
+steps:
+  - kind: PROBLEM
+    title: The fat-image problem
+    label: The problem
+    body: >
+      To *build* a JS app you need Node, npm and all the dev dependencies — often
+      a gigabyte. But to *run* the built files you need almost nothing. Shipping
+      the build tools to production is waste and extra attack surface.
+
+  - kind: CONCEPT
+    title: Stage one — build
+    label: Build stage
+    body: >
+      Name a build stage with `AS build`. Here the full `node:20` image installs
+      everything and runs `npm run build` to produce `/app/dist`. This image is
+      heavy — and we're about to throw it away.
+
+  - kind: CONCEPT
+    title: Stage two — a fresh, tiny base
+    label: Run stage
+    body: >
+      A **second** `FROM` starts a brand-new image from `nginx:alpine` (a few MB).
+      Nothing from the build stage comes along automatically.
+
+  - kind: CONCEPT
+    title: Copy only the result
+    label: COPY --from
+    body: >
+      `COPY --from=build /app/dist …` reaches **back into the build stage** and
+      copies just the finished files. The node toolchain stays behind.
+    callout:
+      kind: PAYOFF
+      text: A ~1GB build image becomes a ~25MB runtime image — same app, far less to ship and patch.
+
+quiz:
+  - question: What does `COPY --from=build` do?
+    options:
+      - Copies from your host
+      - Copies files out of an earlier build stage
+      - Downloads from a registry
+      - Copies from the cache
+    answer: 1
+    explanation: It pulls artifacts from a named earlier stage into the final image, leaving the build tools behind.

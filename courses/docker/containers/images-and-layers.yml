@@ -1,0 +1,71 @@
+title: Images are stacks of layers
+summary: Why pulling the second image is suddenly fast.
+minutes: 7
+difficulty: beginner
+order: 2
+
+scene:
+  widget: stagedReveal
+  caption: Each instruction adds a read-only layer; the container adds a writable one on top.
+  items:
+    - label: base layer — debian
+      note: The OS files. Shared by every image built FROM it.
+      tag: shared
+    - label: + node runtime
+      note: Added once, cached, reused across your images.
+      tag: shared
+    - label: + your dependencies
+      note: node_modules — rebuilt only when package.json changes.
+    - label: + your app code
+      note: The layer that changes on almost every build.
+    - label: + writable container layer
+      note: Where a running container's changes go. Gone when it's removed.
+      tag: ephemeral
+
+steps:
+  - kind: CONCEPT
+    title: An image is layered
+    label: Layers
+    body: >
+      An image isn't one blob — it's a **stack of read-only layers**, one per
+      build instruction. Docker stores each layer once and stacks them with a
+      union filesystem.
+
+  - kind: CONCEPT
+    title: Layers are shared
+    label: Shared
+    body: >
+      Pull two images built on `debian` and the debian layer is downloaded
+      **once**. That's why your second pull is suddenly fast — Docker already
+      has most of the layers.
+    callout:
+      kind: KEY IDEA
+      text: Layers are content-addressed and cached, so identical layers are never stored or pulled twice.
+
+  - kind: CONCEPT
+    title: Order decides your cache
+    label: Cache
+    body: >
+      Change your app code and only the **top** layers rebuild; the base and
+      dependency layers stay cached. Change the base image and everything above
+      it rebuilds.
+
+  - kind: CONCEPT
+    title: The container's own layer
+    label: Writable layer
+    body: >
+      When you run an image, Docker adds a thin **writable layer** on top. Files
+      a container writes live there — and vanish when the container is removed.
+    callout:
+      kind: FORESHADOW
+      text: Need data to survive? That's what volumes are for — coming up in chapter 4.
+
+quiz:
+  - question: Why is pulling a second image based on the same OS much faster?
+    options:
+      - Docker compresses it better
+      - The shared base layers are already downloaded
+      - It skips the download
+      - The image is smaller
+    answer: 1
+    explanation: Layers are cached and shared — only the new, unique layers are pulled.

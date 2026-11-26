@@ -1,0 +1,81 @@
+title: Keeping it tidy
+summary: Reclaim disk, find what's wrong, and don't nuke your data.
+minutes: 8
+difficulty: beginner
+order: 1
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker system df
+      out: |
+        TYPE            TOTAL   ACTIVE   SIZE      RECLAIMABLE
+        Images          24      3        8.1GB     6.4GB (79%)
+        Containers      11      2        120MB     110MB
+        Local Volumes   7       2        2.3GB     1.1GB
+    - cmd: docker ps -a --filter status=exited
+      out: |
+        CONTAINER ID   IMAGE   STATUS                    NAMES
+        3f9c1a2b   myapi   Exited (1) 2 hours ago    api-old
+        7d8e9f0a   node    Exited (0) 5 days ago     build-tmp
+    - cmd: docker container prune
+      out: |
+        Deleted Containers: 2
+        Total reclaimed space: 110MB
+    - cmd: docker image prune -a
+      out: |
+        Total reclaimed space: 6.4GB
+    - cmd: docker system prune
+      out: |
+        WARNING! This will remove all stopped containers, unused
+        networks, dangling images and build cache. Are you sure? [y/N]
+
+steps:
+  - kind: TOOL
+    title: See what's eating disk
+    label: system df
+    body: >
+      `docker system df` shows where your disk went — images, containers,
+      volumes — and how much is **reclaimable**. Images are usually the big one.
+
+  - kind: TOOL
+    title: Find the dead ones
+    label: ps -a
+    body: >
+      `docker ps -a` shows stopped containers too. An `Exited (1)` is a container
+      that crashed — its logs are still there to read with `docker logs`.
+    callout:
+      kind: DEBUG
+      text: A non-zero exit code is your first clue. `docker logs <name>` is your second.
+
+  - kind: TOOL
+    title: Prune the junk
+    label: prune
+    body: >
+      `docker container prune` removes stopped containers; `docker image prune -a`
+      removes unused images. That reclaimable space comes right back.
+
+  - kind: CAUTION
+    title: The big red button
+    label: system prune
+    body: >
+      `docker system prune` sweeps containers, networks, dangling images and build
+      cache in one go. Add `-a --volumes` and it'll take **unused volumes too** —
+      which can mean your data. Read the prompt before you type `y`.
+    callout:
+      kind: SAFETY
+      text: "`--volumes` can delete data. Name your important volumes and double-check before pruning them."
+
+quiz:
+  - question: Which command can accidentally delete data if you add --volumes?
+    options: ["docker ps", "docker logs", "docker system prune", "docker stats"]
+    answer: 2
+    explanation: "docker system prune --volumes removes unused volumes — potentially your databases. Use with care."
+  - question: A container shows "Exited (1)". What's your first move?
+    options:
+      - Delete it
+      - Read its logs with docker logs
+      - Reboot Docker
+      - Pull a new image
+    answer: 1
+    explanation: The exit code says it crashed; the logs usually say why.

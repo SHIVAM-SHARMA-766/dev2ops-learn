@@ -5,11 +5,15 @@ import React from 'react';
 import StagedReveal from './StagedReveal.jsx';
 import CodeWalk from './CodeWalk.jsx';
 import Diagram from './Diagram.jsx';
+import TerminalReplay from './TerminalReplay.jsx';
+import Compare from './Compare.jsx';
 
 const REGISTRY = {
   stagedReveal: StagedReveal,
   codeWalk: CodeWalk,
   diagram: Diagram,
+  terminalReplay: TerminalReplay,
+  compare: Compare,
 };
 
 export function Scene({ scene, activeStep, steps }) {

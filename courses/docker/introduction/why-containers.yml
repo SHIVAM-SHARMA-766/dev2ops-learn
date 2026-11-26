@@ -1,0 +1,76 @@
+title: Why not just a VM?
+summary: Containers vs virtual machines — same goal, very different weight.
+minutes: 6
+difficulty: beginner
+order: 2
+
+scene:
+  widget: compare
+  left:
+    title: Virtual Machine
+    items:
+      - Ships its own full OS kernel
+      - Measured in gigabytes
+      - Boots in tens of seconds
+      - A few per laptop before it melts
+      - Strong isolation (separate kernel)
+  right:
+    title: Container
+    items:
+      - Shares the host's kernel
+      - Measured in megabytes
+      - Starts in milliseconds
+      - Dozens happily on one laptop
+      - Process-level isolation
+  highlight:
+    - [0]
+    - [1, 2]
+    - [3]
+    - [4]
+
+steps:
+  - kind: CONCEPT
+    title: Both solve the same problem
+    label: Same goal
+    body: >
+      VMs and containers both give you an isolated, reproducible environment.
+      The difference is **what they carry** to do it.
+
+  - kind: CONCEPT
+    title: A VM carries a whole OS
+    label: VM = heavy
+    body: >
+      A virtual machine virtualises **hardware** and boots a full guest OS,
+      kernel and all. That's gigabytes on disk and seconds to start — powerful,
+      but heavy.
+
+  - kind: CONCEPT
+    title: A container shares the kernel
+    label: Container = light
+    body: >
+      A container is just an **isolated process** on the host's existing kernel.
+      No second OS to boot. Megabytes, and up in milliseconds.
+    callout:
+      kind: SO THAT
+      text: You can run a whole microservice stack on one modest machine.
+
+  - kind: NOTICE
+    title: The trade-off
+    label: Trade-off
+    body: >
+      Sharing a kernel means slightly weaker isolation than a VM. For most apps
+      that's a great deal — and you can run containers *inside* VMs when you want
+      both. (That's exactly what Docker Desktop does on Mac and Windows.)
+    callout:
+      kind: TL;DR
+      text: VM = own kernel, heavy, strong walls. Container = shared kernel, light, fast.
+
+quiz:
+  - question: Why does a container start so much faster than a VM?
+    options:
+      - It has fewer files
+      - It doesn't boot its own OS kernel
+      - It skips networking
+      - It runs on a faster CPU
+    answer: 1
+    explanation: No guest OS to boot — a container is just a process on the host kernel.

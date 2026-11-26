@@ -1,0 +1,83 @@
+title: Looking inside a running container
+summary: logs, exec, inspect — your three debugging superpowers.
+minutes: 8
+difficulty: beginner
+order: 4
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker logs web
+      out: |
+        10.0.0.5 - - "GET / HTTP/1.1" 200 612
+        10.0.0.5 - - "GET /style.css HTTP/1.1" 200 1098
+    - cmd: docker logs -f web
+      out: |
+        10.0.0.5 - - "GET /api/health HTTP/1.1" 200 2
+        ^C  (following live… Ctrl-C to stop)
+    - cmd: docker exec -it web sh
+      out: |
+        / # ls /usr/share/nginx/html
+        50x.html    index.html
+        / # exit
+    - cmd: docker inspect -f '{{.State.Status}} {{.NetworkSettings.IPAddress}}' web
+      out: |
+        running 172.17.0.2
+    - cmd: docker stats --no-stream web
+      out: |
+        CONTAINER   CPU %   MEM USAGE / LIMIT   NET I/O
+        web         0.01%   4.2MiB / 1.9GiB     1.2kB / 0B
+
+steps:
+  - kind: TOOL
+    title: Read the logs
+    label: logs
+    body: >
+      `docker logs <name>` prints whatever the container wrote to stdout/stderr.
+      In containers, **logging to stdout is the convention** — Docker captures it
+      for you.
+
+  - kind: TOOL
+    title: Follow them live
+    label: "logs -f"
+    body: >
+      Add `-f` to stream logs as they happen, like `tail -f`. `--tail 50` limits
+      to the last 50 lines so you're not flooded.
+
+  - kind: TOOL
+    title: Step inside
+    label: exec
+    body: >
+      `docker exec -it <name> sh` opens a shell **inside the running container**
+      — poke at files, run commands, see what it sees. This is different from
+      `run`: you're joining a container that already exists.
+    callout:
+      kind: GOTCHA
+      text: Slim images may not have bash. Try `sh` instead of `bash`.
+
+  - kind: TOOL
+    title: Inspect the facts
+    label: inspect
+    body: >
+      `docker inspect` dumps everything Docker knows as JSON — IP, mounts, env,
+      state. Use `-f` with a Go template to pull out just the field you want.
+
+  - kind: TOOL
+    title: Watch resources
+    label: stats
+    body: >
+      `docker stats` is a live `top` for containers — CPU, memory, network. Great
+      for spotting the container that's eating your laptop.
+    callout:
+      kind: DEBUG KIT
+      text: logs (what it said) · exec (what it sees) · inspect (what it is) · stats (what it uses).
+
+quiz:
+  - question: What's the difference between `docker run` and `docker exec`?
+    options:
+      - Nothing
+      - run creates a new container; exec runs a command in an existing one
+      - exec is faster
+      - run is only for images
+    answer: 1
+    explanation: run starts a fresh container; exec jumps into one that's already running.

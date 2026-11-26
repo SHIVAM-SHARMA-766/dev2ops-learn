@@ -2,6 +2,7 @@
 // scene props: { lines: ["..."], highlights: [[lineIdx,...], ...], filename? }
 // highlights[activeStep] is the set of 0-based line indexes to emphasize.
 import React from 'react';
+import CopyButton from './CopyButton.jsx';
 
 export default function CodeWalk({ lines = [], highlights = [], filename, activeStep = 0 }) {
   const active = new Set(highlights[activeStep] || []);
@@ -11,6 +12,7 @@ export default function CodeWalk({ lines = [], highlights = [], filename, active
       <div className="w-code__bar mono">
         <span className="w-code__dot" /><span className="w-code__dot" /><span className="w-code__dot" />
         <span className="w-code__name">{filename || 'example'}</span>
+        <CopyButton text={lines.join('\n')} className="w-code__copy" />
       </div>
       <pre className="w-code__pre">
         {lines.map((ln, i) => {

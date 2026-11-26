@@ -36,15 +36,23 @@ export function markLessonDone(course, chapter, lesson) {
   writeAll(all);
 }
 
-export function setLast(course, path) {
+export function setLast(course, path, title, courseTitle) {
   const all = readAll();
   const cp = all[course] || { completed: {}, last: null };
   cp.last = path;
   all[course] = cp;
+  // global pointer for "continue where you left off" on home
+  all._resume = { course, courseTitle: courseTitle || course, path, title: title || '', ts: Date.now() };
   writeAll(all);
 }
 
 export function completedCount(course) {
   const p = getCourseProgress(course);
   return Object.keys(p.completed).length;
+}
+
+/** Most recently opened lesson across all courses, or null. */
+export function getResume() {
+  const all = readAll();
+  return all._resume || null;
 }

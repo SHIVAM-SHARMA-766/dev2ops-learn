@@ -1,0 +1,91 @@
+title: Your first container
+summary: Run something real in ten seconds, then peek at what happened.
+minutes: 8
+difficulty: beginner
+order: 4
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker run hello-world
+      out: |
+        Unable to find image 'hello-world:latest' locally
+        latest: Pulling from library/hello-world
+        Digest: sha256:9f6ad537…
+        Status: Downloaded newer image for hello-world:latest
+
+        Hello from Docker!
+        This message shows that your installation appears to be working.
+    - cmd: docker run -d -p 8080:80 --name web nginx
+      out: |
+        Unable to find image 'nginx:latest' locally
+        latest: Pulling from library/nginx
+        a1b2c3d4e5f6   Pull complete
+        Status: Downloaded newer image for nginx:latest
+        7f3c9b2a1d8e4c5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f
+    - cmd: curl -s localhost:8080 | head -4
+      out: |
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <title>Welcome to nginx!</title>
+    - cmd: docker ps
+      out: |
+        CONTAINER ID   IMAGE   COMMAND                  STATUS         PORTS                  NAMES
+        7f3c9b2a1d8e   nginx   "/docker-entrypoint.…"   Up 12 seconds  0.0.0.0:8080->80/tcp   web
+
+steps:
+  - kind: DO IT
+    title: Say hello
+    label: hello-world
+    body: >
+      `docker run hello-world`. Docker can't find the image locally, so it
+      **pulls** it from Docker Hub, creates a container, runs it, and the
+      container prints a greeting and exits. That's the whole lifecycle in one
+      line.
+
+  - kind: DO IT
+    title: Run a real web server
+    label: run nginx
+    body: >
+      Now something you can actually visit. `-d` runs it in the background
+      (detached), `-p 8080:80` maps **your** port 8080 to the container's port
+      80, and `--name web` gives it a friendly name.
+    callout:
+      kind: PORT MAP
+      text: "`-p HOST:CONTAINER` — left is your machine, right is inside the container."
+
+  - kind: CHECK
+    title: Hit it
+    label: curl it
+    body: >
+      `curl localhost:8080` and nginx answers from inside the container. You just
+      ran a web server without installing nginx on your machine at all.
+
+  - kind: CONCEPT
+    title: See it running
+    label: docker ps
+    body: >
+      `docker ps` lists running containers — id, image, status, port mapping and
+      name. When you're done, `docker rm -f web` stops and removes it.
+    callout:
+      kind: TRY
+      text: Change 8080 to another port and run a second nginx. Two servers, one command each.
+
+quiz:
+  - question: In `-p 8080:80`, which port do you open in your browser?
+    options:
+      - 80
+      - 8080
+      - both
+      - neither
+    answer: 1
+    explanation: The host port is on the left (8080). It forwards to port 80 inside the container.
+  - question: What does `-d` do?
+    options:
+      - Deletes the container after
+      - Runs it detached, in the background
+      - Enables debug logs
+      - Downloads dependencies
+    answer: 1
+    explanation: "-d = detached: the container runs in the background and gives you your shell back."

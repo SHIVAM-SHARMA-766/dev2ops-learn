@@ -1,0 +1,74 @@
+title: Healthchecks & scaling
+summary: Wait for "ready", not just "started" — and run more than one.
+minutes: 8
+difficulty: intermediate
+order: 2
+
+scene:
+  widget: codeWalk
+  filename: compose.yaml
+  lines:
+    - "services:"
+    - "  db:"
+    - "    image: postgres:16"
+    - "    environment: { POSTGRES_PASSWORD: secret }"
+    - "    healthcheck:"
+    - "      test: [\"CMD\", \"pg_isready\", \"-U\", \"postgres\"]"
+    - "      interval: 5s"
+    - "      retries: 5"
+    - "  web:"
+    - "    build: ."
+    - "    depends_on:"
+    - "      db: { condition: service_healthy }"
+    - "    deploy:"
+    - "      replicas: 3"
+  highlights:
+    - [1, 2, 3]
+    - [4, 5, 6, 7]
+    - [8, 9, 10, 11]
+    - [12, 13]
+
+steps:
+  - kind: RECAP
+    title: depends_on isn't enough
+    label: The gap
+    body: >
+      Last time we used `depends_on` so `db` starts before `web`. But "started"
+      isn't "ready" — Postgres takes a second or two to accept connections, and
+      `web` can crash trying to connect too early.
+
+  - kind: CONCEPT
+    title: Define "healthy"
+    label: Healthcheck
+    body: >
+      A `healthcheck` runs a command on an interval. `pg_isready` returns success
+      only when Postgres actually accepts connections. Docker marks the container
+      **healthy** once it passes.
+
+  - kind: CONCEPT
+    title: Wait for healthy
+    label: condition
+    body: >
+      `depends_on` with `condition: service_healthy` holds `web` back until `db`'s
+      healthcheck passes. No more race, no retry hacks.
+    callout:
+      kind: KEY IDEA
+      text: Gate startup on *ready*, not on *started*.
+
+  - kind: CONCEPT
+    title: Run several copies
+    label: replicas
+    body: >
+      `replicas: 3` runs three `web` containers behind Compose's built-in DNS.
+      Scale out with `docker compose up --scale web=5`. (For real load balancing
+      and rollouts you'd reach for Kubernetes — but this is plenty to start.)
+
+quiz:
+  - question: Why add a healthcheck when you already have depends_on?
+    options:
+      - depends_on waits for "started", not "ready to serve"
+      - It makes containers start faster
+      - It's required syntax
+      - To expose a port
+    answer: 0
+    explanation: depends_on only orders start-up; a healthcheck + service_healthy waits until the service actually works.

@@ -2,7 +2,7 @@ title: Installing Docker
 summary: Get Docker running, and understand each line before you run it.
 minutes: 10
 difficulty: beginner
-order: 2
+order: 3
 
 scene:
   widget: codeWalk

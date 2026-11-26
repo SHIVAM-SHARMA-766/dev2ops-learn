@@ -6,12 +6,14 @@ import '../styles/player.css';
 import { Scene } from './widgets/index.jsx';
 import { Markdown } from './md.jsx';
 import { isLessonDone, markLessonDone, setLast } from './progress.js';
+import { confetti } from './celebrate.js';
 
 export default function StepPlayer({ course, tree, lesson, prev, next }) {
   const steps = lesson.steps || [];
   const total = steps.length;
   const [step, setStep] = useState(0);
   const [done, setDone] = useState({}); // "chapter/slug" -> true, hydrated on client
+  const [toast, setToast] = useState(null);
   const current = steps[step] || {};
 
   const go = useCallback(
@@ -26,16 +28,25 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
       if (isLessonDone(course.slug, ch.slug, l.slug)) map[`${ch.slug}/${l.slug}`] = true;
     }
     setDone(map);
-    setLast(course.slug, `/${course.slug}/${lesson.chapter}/${lesson.slug}`);
-  }, [course.slug, lesson.chapter, lesson.slug, tree]);
+    setLast(course.slug, `/${course.slug}/${lesson.chapter}/${lesson.slug}`, lesson.title, course.title);
+  }, [course.slug, course.title, lesson.chapter, lesson.slug, lesson.title, tree]);
 
-  // reaching the final step completes the lesson
+  // reaching the final step completes the lesson — celebrate the first time
   useEffect(() => {
     if (total > 0 && step === total - 1) {
+      const key = `${lesson.chapter}/${lesson.slug}`;
+      const wasDone = isLessonDone(course.slug, lesson.chapter, lesson.slug);
       markLessonDone(course.slug, lesson.chapter, lesson.slug);
-      setDone((d) => ({ ...d, [`${lesson.chapter}/${lesson.slug}`]: true }));
+      setDone((d) => ({ ...d, [key]: true }));
+      if (!wasDone) {
+        const courseComplete = !next;
+        confetti(courseComplete ? { count: 160, duration: 2800 } : { count: 70 });
+        setToast(courseComplete ? '🎉 Course complete! You finished it.' : '✓ Lesson complete!');
+        const t = setTimeout(() => setToast(null), courseComplete ? 5000 : 2600);
+        return () => clearTimeout(t);
+      }
     }
-  }, [step, total, course.slug, lesson.chapter, lesson.slug]);
+  }, [step, total, course.slug, course.title, lesson.chapter, lesson.slug, next]);
 
   // keyboard: ← / → (and h / l) move between steps
   useEffect(() => {
@@ -54,6 +65,7 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
 
   return (
     <div className="player" data-accent={course.accent}>
+      {toast && <div className="player__toast mono" role="status">{toast}</div>}
       {/* ---- left: chapter tree + progress ---- */}
       <aside className="player__side">
         <a className="side__course" href="/">

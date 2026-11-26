@@ -1,0 +1,81 @@
+title: Volumes & bind mounts
+summary: Two ways to make data outlive the container — and when to use each.
+minutes: 8
+difficulty: beginner
+order: 2
+
+scene:
+  widget: compare
+  left:
+    title: Bind mount
+    items:
+      - A folder from your host
+      - "-v /path/on/host:/path/in/container"
+      - You control the exact location
+      - Great for local dev — live code reload
+      - Tied to the host's filesystem layout
+  right:
+    title: Named volume
+    items:
+      - Managed by Docker
+      - "-v mydata:/var/lib/postgresql/data"
+      - Docker picks and owns the storage
+      - Great for production data (databases)
+      - Portable, backup-friendly
+  highlight:
+    - [0]
+    - [1]
+    - [3]
+    - [4]
+
+steps:
+  - kind: CONCEPT
+    title: Mount something that persists
+    label: Mounts
+    body: >
+      A **mount** puts storage from outside the container at a path inside it.
+      Writes go to that outside storage, so they survive the container. Two
+      flavours: bind mounts and named volumes.
+
+  - kind: CONCEPT
+    title: Bind mount — your folder
+    label: Bind mount
+    body: >
+      `-v $(pwd):/app` maps a folder on **your machine** into the container. Edit
+      a file on your host and the container sees it instantly — perfect for live
+      reload in development.
+
+  - kind: CONCEPT
+    title: Named volume — Docker's folder
+    label: Named volume
+    body: >
+      `-v pgdata:/var/lib/postgresql/data` asks **Docker** to manage a storage
+      area called `pgdata`. You don't care where it lives; Docker does. This is
+      what databases want.
+    callout:
+      kind: RULE OF THUMB
+      text: Code you're editing → bind mount. Data you must not lose → named volume.
+
+  - kind: CONCEPT
+    title: It survives now
+    label: Survives
+    body: >
+      Remove and recreate the container with the **same** volume and your data is
+      still there. The container is disposable; the volume is not.
+    callout:
+      kind: HANDY
+      text: "`docker volume ls`, `docker volume inspect pgdata`, and back up by mounting it into a tar command."
+
+quiz:
+  - question: You're running Postgres in production. Which do you use for its data?
+    options:
+      - A bind mount to /tmp
+      - A named volume
+      - Nothing, it persists by default
+      - The writable layer
+    answer: 1
+    explanation: Named volumes are Docker-managed, portable and the right home for database data.
+  - question: Which is best for live-reloading your source during development?
+    options: ["Named volume", "Bind mount", "Image layer", "tmpfs"]
+    answer: 1
+    explanation: A bind mount maps your real project folder in, so edits show up immediately.

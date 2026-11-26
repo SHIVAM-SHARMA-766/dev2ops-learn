@@ -15,18 +15,21 @@ deploy pipeline. One course (Docker) is authored on it.
 - [x] Per-browser progress (completed ticks, progress bars)
 - [x] Light/dark + per-course accent
 - [x] Build checks green; sitemap
+- [x] Widgets: `terminalReplay` (animated terminal) and `compare` (before/after)
+- [x] Copy-to-clipboard on code and terminal widgets
+- [x] Completion celebration: confetti + toast on lesson/course complete
+- [x] "Continue where you left off" banner on the home page
+- [x] Docker course expanded to 17 lessons across 7 chapters, fun voice
 
 ## Next
 
 - [ ] **Search** (Ctrl+K) across lessons and concepts
-- [ ] **"Continue where you left off"** on home and course pages (data is already
-      stored in `localStorage`; surface it)
-- [ ] **More widgets** — timeline/sequence, metric tiles, before/after, terminal
-      replay — to cover more lesson shapes without custom code
-- [ ] **Author the next course** end-to-end (e.g. Git, Linux, CI/CD) to stress
-      the authoring loop and find schema gaps
+- [ ] **Achievements / streak / XP** — lightweight, fun progress on top of ticks
+- [ ] **Per-lesson resume** — reopen at the step you left on
+- [ ] **More widgets** — timeline/sequence, metric tiles, annotated screenshot
 - [ ] **Lesson validation** at build time (zod schema for YAML) with clear errors
 - [ ] **Cheatsheets / Practice** tabs, as the templates have
+- [ ] Keyboard shortcut help overlay (press `?`)
 
 ## Later
 

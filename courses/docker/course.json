@@ -1,16 +1,19 @@
 {
   "title": "Docker from zero",
-  "tagline": "Containers from first principles — run, build and compose real apps.",
-  "description": "Containers explained from first principles: run, build and compose real applications with Docker, one step at a time.",
+  "tagline": "Containers from first principles — run, build, ship and debug real apps.",
+  "description": "A hands-on, build-it-yourself tour of Docker: what containers really are, how to run and build them, where your data lives, how they talk, and how to keep them tidy. Lots of fake terminals you can follow along in a real one.",
   "level": "Beginner",
   "icon": "🐳",
   "accent": "blue",
   "status": "published",
   "order": 1,
   "chapters": [
-    { "slug": "introduction", "title": "Introduction" },
+    { "slug": "introduction", "title": "Getting started" },
     { "slug": "containers", "title": "Images & containers" },
-    { "slug": "dockerfile", "title": "Writing a Dockerfile" },
-    { "slug": "compose", "title": "Docker Compose" }
+    { "slug": "dockerfile", "title": "Building images" },
+    { "slug": "data", "title": "Data & volumes" },
+    { "slug": "networking", "title": "Networking" },
+    { "slug": "compose", "title": "Docker Compose" },
+    { "slug": "operating", "title": "Operating & debugging" }
   ]
 }

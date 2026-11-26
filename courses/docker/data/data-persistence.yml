@@ -1,0 +1,74 @@
+title: Where did my data go?
+summary: The classic "I lost my database" moment — and why.
+minutes: 7
+difficulty: beginner
+order: 1
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker run -d --name db postgres:16 -e POSTGRES_PASSWORD=secret
+      out: |
+        9a8b7c6d5e4f…
+    - cmd: docker exec -it db psql -U postgres -c "CREATE TABLE notes(t text);"
+      out: |
+        CREATE TABLE
+    - cmd: docker rm -f db
+      out: |
+        db
+    - cmd: docker run -d --name db postgres:16 -e POSTGRES_PASSWORD=secret
+      out: |
+        1f2e3d4c5b6a…
+    - cmd: docker exec -it db psql -U postgres -c "\dt"
+      out: |
+        Did not find any relations.
+        (your table is gone 😱)
+
+steps:
+  - kind: STORY
+    title: Spin up a database
+    label: Create
+    body: >
+      You run Postgres in a container and create a table. Everything works. You
+      feel great.
+
+  - kind: STORY
+    title: Add some data
+    label: Write
+    body: >
+      The container writes the table into its **writable layer** — that thin
+      scratch layer on top of the image.
+
+  - kind: STORY
+    title: Remove the container
+    label: "rm -f"
+    body: >
+      Later you `docker rm -f db` to recreate it with new settings. Routine.
+      Except…
+
+  - kind: PROBLEM
+    title: Everything's gone
+    label: 💀 gone
+    body: >
+      The writable layer went **with** the container. Your table never existed
+      anywhere else. This bites everyone exactly once.
+    callout:
+      kind: THE RULE
+      text: A container's filesystem is disposable. If you removed the container, you removed its data.
+
+  - kind: CONCEPT
+    title: The fix (next lesson)
+    label: The fix
+    body: >
+      Store state **outside** the container, in a **volume**. The container stays
+      disposable; the data lives on. That's exactly what we'll do next.
+
+quiz:
+  - question: Why did the table disappear?
+    options:
+      - Postgres crashed
+      - It lived in the container's writable layer, removed with the container
+      - The password was wrong
+      - Docker deleted it on purpose
+    answer: 1
+    explanation: No volume = data in the ephemeral writable layer, gone when the container is removed.

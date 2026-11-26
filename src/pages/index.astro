@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ResumeBanner from '../islands/ResumeBanner.jsx';
 import { getCourses } from '../lib/courses.js';
 import siteConfig from '../../site.config.json';
 
@@ -24,6 +25,8 @@ const totalLessons = courses.reduce((n, c) => n + c.lessonCount, 0);
       <span>progress saved in your browser</span>
     </div>
   </section>
+
+  <ResumeBanner client:load />
 
   <!-- course grid -->
   <section class="catalog" aria-label="Courses">
