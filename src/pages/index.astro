@@ -1,31 +1,106 @@
 ---
-import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import { readCourses, lessonIds } from '../lib/courses';
-import { site } from '../lib/site';
+import Base from '../layouts/Base.astro';
+import { getCourses } from '../lib/courses.js';
+import siteConfig from '../../site.config.json';
 
-const courses = await Promise.all(readCourses().map(async (c) => ({ ...c, lessons: await lessonIds(c.slug) })));
+const courses = getCourses();
+const totalLessons = courses.reduce((n, c) => n + c.lessonCount, 0);
 ---
-<StarlightPage
-  frontmatter={{
-    title: 'Learn',
-    description: site.description,
-    template: 'splash',
-    hero: {
-      title: 'Learn DevOps by doing',
-      tagline: 'Free, hands-on courses: short lessons, real commands and a quiz at the end of each. Your progress is saved in this browser, no sign-up needed.',
-      actions: courses[0] ? [{ text: `Start ${courses[0].title}`, link: `/${courses[0].slug}/`, icon: 'right-arrow' }, { text: 'About the author', link: site.author.url, variant: 'minimal', icon: 'external' }] : [],
-    },
-  }}
->
-  <h2>Courses</h2>
-  <div class="course-grid">
-    {courses.map((c) => (
-      <a class="course-card" href={`/${c.slug}/`}>
-        <h3>{c.icon} {c.title}</h3>
-        <p>{c.description}</p>
-        <p class="meta">{c.level} · {c.lessons.length} lessons · {c.duration}</p>
-        <div class="card-bar" data-course-progress={c.slug} data-lessons={JSON.stringify(c.lessons)}><span></span></div>
-      </a>
-    ))}
-  </div>
-</StarlightPage>
+
+<Base active="courses" title={null}>
+  <!-- hero -->
+  <section class="hero">
+    <p class="hero__eyebrow mono">dev2ops learn · $0, no sign-up</p>
+    <h1 class="hero__title">Learn DevOps by <span class="hl">doing</span>, one step at a time.</h1>
+    <p class="hero__lead">
+      Short, interactive lessons that walk you through real systems hop by hop —
+      containers, pipelines, infrastructure. Watch it happen, then try it yourself.
+    </p>
+    <div class="hero__stats mono">
+      <span><b>{courses.length}</b> courses</span>
+      <span class="dot">·</span>
+      <span><b>{totalLessons}</b> lessons</span>
+      <span class="dot">·</span>
+      <span>progress saved in your browser</span>
+    </div>
+  </section>
+
+  <!-- course grid -->
+  <section class="catalog" aria-label="Courses">
+    {courses.length === 0 && <p class="empty mono">No courses yet. Add one under <code>courses/</code>.</p>}
+    <div class="grid">
+      {courses.map((c) => {
+        const first = c.chapters.flatMap((ch) => ch.lessons)[0];
+        const href = first ? first.path : `/${c.slug}`;
+        return (
+          <a class="coursecard card" href={href} data-accent={c.accent}>
+            <div class="coursecard__top">
+              <span class="coursecard__icon">{c.icon || '◆'}</span>
+              {c.status !== 'published' && <span class="badge">draft</span>}
+            </div>
+            <h2 class="coursecard__title">{c.title}</h2>
+            <p class="coursecard__tagline">{c.tagline || c.description}</p>
+            <div class="coursecard__meta mono">
+              {c.level && <span class="badge badge--accent">{c.level}</span>}
+              <span>{c.lessonCount} lessons</span>
+            </div>
+            <span class="coursecard__cta mono">Start →</span>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+  <!-- how it works -->
+  <section class="how card" id="how">
+    <h2 class="how__title mono">How it works</h2>
+    <ol class="how__list">
+      <li><b>Pick a course.</b> Each is a track of chapters and short lessons.</li>
+      <li><b>Step through it.</b> A lesson is a sequence of steps — read the note on
+        the right, watch the diagram change, press <kbd>→</kbd> for the next step.</li>
+      <li><b>Keep your place.</b> Finished lessons and your progress are stored in
+        your browser. Nothing is sent anywhere, no account needed.</li>
+    </ol>
+  </section>
+</Base>
+
+<style>
+  .hero { padding: 40px 0 36px; max-width: 760px; }
+  .hero__eyebrow { color: var(--accent); font-size: 13px; letter-spacing: 0.04em; margin: 0 0 14px; }
+  .hero__title { font-size: clamp(32px, 5vw, 46px); line-height: 1.08; letter-spacing: -0.02em; margin: 0 0 18px; }
+  .hero__title .hl { color: var(--accent); }
+  .hero__lead { font-size: 17px; color: var(--ink-soft); margin: 0 0 20px; max-width: 620px; }
+  .hero__stats { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 13px; color: var(--ink-soft); }
+  .hero__stats b { color: var(--ink); }
+  .hero__stats .dot { color: var(--ink-faint); }
+
+  .catalog { margin: 8px 0 48px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+  .empty { color: var(--ink-soft); }
+
+  .coursecard {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 20px; text-decoration: none; color: var(--ink);
+    position: relative; transition: transform 0.12s ease, border-color 0.12s ease;
+    border-top: 3px solid var(--accent);
+  }
+  .coursecard:hover { transform: translateY(-3px); border-color: var(--line-strong); border-top-color: var(--accent); }
+  .coursecard__top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .coursecard__icon {
+    width: 44px; height: 44px; border-radius: 11px; display: grid; place-items: center;
+    background: var(--accent-soft); color: var(--accent); font-size: 22px;
+  }
+  .coursecard__title { font-size: 20px; margin: 4px 0 0; letter-spacing: -0.01em; }
+  .coursecard__tagline { color: var(--ink-soft); font-size: 14px; margin: 0; flex: 1; }
+  .coursecard__meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-faint); }
+  .coursecard__cta { color: var(--accent); font-size: 14px; font-weight: 600; }
+
+  .how { padding: 26px 28px; margin-bottom: 48px; }
+  .how__title { font-size: 18px; margin: 0 0 14px; }
+  .how__list { margin: 0; padding-left: 22px; display: grid; gap: 10px; color: var(--ink-soft); }
+  .how__list b { color: var(--ink); }
+  kbd {
+    font-family: var(--font-mono); font-size: 12px; padding: 1px 6px; border-radius: 5px;
+    background: var(--surface-2); border: 1px solid var(--line-strong); color: var(--ink);
+  }
+</style>

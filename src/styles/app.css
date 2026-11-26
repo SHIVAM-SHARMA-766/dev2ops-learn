@@ -1,0 +1,187 @@
+/* dev2ops learn — design system.
+   Warm "paper" surfaces, a mono display face, a sans reading face, and a
+   per-course accent set on [data-accent]. Light and dark both first-class. */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* light — warm paper */
+  --paper: #f4ebe0;
+  --surface: #fbf7f0;
+  --surface-2: #f0e6d8;
+  --ink: #2b2620;
+  --ink-soft: #6b6256;
+  --ink-faint: #9a9082;
+  --line: #e0d4c2;
+  --line-strong: #cdbda4;
+  --shadow: 0 1px 2px rgba(43, 38, 32, 0.06), 0 8px 24px rgba(43, 38, 32, 0.06);
+
+  /* accent palette (course picks one on [data-accent]) */
+  --accent-green: #3f9d5b;
+  --accent-red: #e0583b;
+  --accent-blue: #2f6bd8;
+  --accent-violet: #7a5af0;
+  --accent-amber: #d98a2b;
+  --accent-teal: #1d9e93;
+
+  --accent: var(--accent-green);
+  --accent-ink: #ffffff;
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, var(--surface));
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --maxw: 1400px;
+}
+
+:root[data-accent='green'] { --accent: var(--accent-green); }
+:root[data-accent='red'] { --accent: var(--accent-red); }
+:root[data-accent='blue'] { --accent: var(--accent-blue); }
+:root[data-accent='violet'] { --accent: var(--accent-violet); }
+:root[data-accent='amber'] { --accent: var(--accent-amber); }
+:root[data-accent='teal'] { --accent: var(--accent-teal); }
+/* also works when set on a wrapper element */
+[data-accent='green'] { --accent: var(--accent-green); }
+[data-accent='red'] { --accent: var(--accent-red); }
+[data-accent='blue'] { --accent: var(--accent-blue); }
+[data-accent='violet'] { --accent: var(--accent-violet); }
+[data-accent='amber'] { --accent: var(--accent-amber); }
+[data-accent='teal'] { --accent: var(--accent-teal); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #1a1713;
+    --surface: #221e19;
+    --surface-2: #2b261f;
+    --ink: #f0e8dc;
+    --ink-soft: #b3a894;
+    --ink-faint: #837a6b;
+    --line: #342e26;
+    --line-strong: #473f33;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.35);
+    --accent-soft: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  }
+}
+:root[data-theme='dark'] {
+  --paper: #1a1713;
+  --surface: #221e19;
+  --surface-2: #2b261f;
+  --ink: #f0e8dc;
+  --ink-soft: #b3a894;
+  --ink-faint: #837a6b;
+  --line: #342e26;
+  --line-strong: #473f33;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.35);
+  --accent-soft: color-mix(in srgb, var(--accent) 22%, var(--surface));
+}
+
+* { box-sizing: border-box; }
+
+html { color-scheme: light dark; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+h1, h2, h3, .mono { font-family: var(--font-mono); }
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+
+/* top navigation ---------------------------------------------------------- */
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.topnav__inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 58px;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  color: var(--ink);
+}
+.brand__mark {
+  width: 26px; height: 26px; border-radius: 7px;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--accent-ink);
+  font-size: 15px;
+}
+.brand__dim { color: var(--ink-faint); }
+.topnav__spacer { flex: 1; }
+.navlinks { display: flex; gap: 4px; }
+.navlinks a {
+  padding: 7px 12px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500; text-decoration: none; color: var(--ink-soft);
+}
+.navlinks a:hover { background: var(--surface-2); color: var(--ink); }
+.navlinks a[aria-current='page'] { background: var(--accent); color: var(--accent-ink); }
+.iconbtn {
+  display: grid; place-items: center;
+  width: 34px; height: 34px; border-radius: var(--radius-sm);
+  background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft);
+  cursor: pointer;
+}
+.iconbtn:hover { color: var(--ink); border-color: var(--line-strong); }
+
+/* generic card ------------------------------------------------------------ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--line);
+}
+.badge--accent { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-weight: 600; font-size: 14px;
+  padding: 9px 16px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  cursor: pointer; text-decoration: none;
+}
+.btn:hover { border-color: var(--ink-soft); }
+.btn--accent { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn--accent:hover { filter: brightness(1.05); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+}
+
+@media (max-width: 720px) {
+  .navlinks { display: none; }
+}

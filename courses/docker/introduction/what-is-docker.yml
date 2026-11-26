@@ -1,0 +1,93 @@
+title: What is Docker?
+summary: Why containers exist, and what they actually share with your machine.
+minutes: 8
+difficulty: beginner
+order: 1
+
+# The scene stays on screen for the whole lesson and reacts to the active step.
+scene:
+  widget: stagedReveal
+  caption: One app, carried with everything it needs to run.
+  items:
+    - label: Your code
+      note: The program you wrote.
+    - label: + Runtime & libraries
+      note: The exact Node, Python or JVM version it needs.
+      tag: image
+    - label: + System tools & config
+      note: Everything the OS layer provides, pinned.
+      tag: image
+    - label: = An image
+      note: A sealed, read-only bundle. Build once, runs anywhere.
+      tag: build
+    - label: → A container
+      note: A running instance of that image — an isolated process.
+      tag: run
+
+steps:
+  - kind: PROBLEM
+    title: "“Works on my machine”"
+    label: The problem
+    body: >
+      Your app runs fine on your laptop and breaks on the server. Different OS,
+      different library versions, a missing tool. The code is the same — the
+      *environment* is not.
+    callout:
+      kind: KEY IDEA
+      text: Most deployment pain is environment drift, not bugs in the code.
+
+  - kind: CONCEPT
+    title: Package the environment too
+    label: Bundle it
+    body: >
+      What if you shipped the code **and** its whole environment together —
+      runtime, libraries, system tools — as one sealed unit? That unit is an
+      **image**.
+
+  - kind: CONCEPT
+    title: Build once, run anywhere
+    label: The image
+    body: >
+      An image is read-only and reproducible. The same image runs identically
+      on your laptop, a teammate's machine and production, because it carries
+      its environment with it.
+
+  - kind: CONCEPT
+    title: A container is a running image
+    label: The container
+    body: >
+      Start an image and you get a **container**: an isolated process with its
+      own filesystem and network view. Stop it, start ten more — each one the
+      same.
+    callout:
+      kind: ANALOGY
+      text: An image is to a container what a class is to an object.
+
+  - kind: NOTICE
+    title: Not a virtual machine
+    label: vs a VM
+    body: >
+      A container shares the **host's Linux kernel** — it does not boot its own
+      OS. That is why containers start in milliseconds and a VM takes seconds:
+      the VM brings a whole kernel, the container does not.
+    callout:
+      kind: REMEMBER
+      text: Containers are isolated processes on the host kernel, not tiny VMs.
+
+quiz:
+  - question: What does a container share with its host?
+    options:
+      - Nothing — it has its own kernel
+      - The host's kernel
+      - The host's user accounts
+      - The host's filesystem, always
+    answer: 1
+    explanation: Containers are isolated processes on the host kernel. A virtual machine brings its own kernel.
+  - question: An image is to a container what…
+    options:
+      - a class is to an object
+      - a server is to a client
+      - a disk is to RAM
+      - a log is to a metric
+    answer: 0
+    explanation: An image is the read-only template; a container is a running instance created from it.

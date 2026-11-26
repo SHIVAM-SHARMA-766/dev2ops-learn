@@ -1,16 +1,25 @@
 # dev2ops learn
 
-Free, hands-on DevOps courses at **[learn.dev2ops.in](https://learn.dev2ops.in)**: short
-lessons, real commands, and a quiz at the end of each one.
+An interactive course platform at **[learn.dev2ops.in](https://learn.dev2ops.in)**.
+One site, many courses. Each lesson is a sequence of **steps** that drive a live
+visual on screen — watch a container's lifecycle, a Dockerfile build layer by
+layer, a request travel hop by hop — then answer a short quiz.
 
-- **Courses → chapters → lessons**, written in Markdown
-- **Quizzes** with explanations; passing one completes the lesson
-- **Progress saved in your browser**: completed lessons, course progress bars, sidebar
-  ticks, "continue where you left off". No sign-up, nothing sent anywhere
-- **Light and dark**, four accent colours, full-text search
-- **$0 to run**: a static site on an always-free Oracle Cloud VM, deployed by GitHub Actions
+- **A step player, not a wall of text.** Left: chapter tree with progress.
+  Centre: a visual that reacts to the current step. Right: the narration. Move
+  with the arrow keys.
+- **Courses are content, not code.** A course is a folder of YAML lessons;
+  adding one needs no code change.
+- **Reusable visuals.** Lessons compose a shared library of widgets
+  (staged reveal, code walkthrough, node diagram, …) — so a new course is
+  authored, not engineered.
+- **Progress saved in your browser.** Completed lessons, progress bars, sidebar
+  ticks. No sign-up, nothing sent anywhere.
+- **Light and dark**, a per-course accent colour.
+- **$0 to run.** A static site on an always-free Oracle Cloud VM, deployed by
+  GitHub Actions.
 
-Built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build).
+Built with [Astro](https://astro.build) (static) and React islands.
 
 ## Run it
 
@@ -18,8 +27,7 @@ Built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.
 npm install
 npm run dev          # http://localhost:4322
 npm run build        # dist/
-npm test             # build checks
-npm run test:e2e     # browser test (CHROME_PATH=/path/to/chrome if not /usr/bin/chromium)
+npm test             # build checks (run after build)
 ```
 
 Node 22.23 or newer (see `.nvmrc`).
@@ -29,30 +37,42 @@ Node 22.23 or newer (see `.nvmrc`).
 ```
 courses/
 └── docker/
-    ├── course.json          title, description, level, duration, icon, status, chapters
-    ├── index.md             the course overview page
-    └── introduction/        one folder per chapter (slug from course.json)
-        └── what-is-docker.md
+    ├── course.json              title, tagline, accent, icon, level, order, status, chapters
+    └── introduction/            one folder per chapter (slug from course.json)
+        └── what-is-docker.yml   one lesson
 ```
 
-A lesson is Markdown with front matter:
+A lesson is a YAML file: metadata, one `scene` (the on-screen visual) and an
+ordered list of `steps`. The scene reacts to the active step.
 
 ```yaml
----
 title: What is Docker?
-description: Containers, images and why they matter.
-sidebar: { order: 1 }
+summary: Why containers exist.
+minutes: 8
 difficulty: beginner
-minutes: 10
+
+scene:
+  widget: stagedReveal          # see src/islands/widgets/
+  items:
+    - { label: Your code, note: The program you wrote. }
+    - { label: + Runtime, note: The version it needs. }
+
+steps:
+  - kind: PROBLEM               # the small badge in the narration panel
+    title: "“Works on my machine”"
+    label: The problem          # short label for the step timeline
+    body: Your app runs here and breaks there…
+    callout: { kind: KEY IDEA, text: Environment drift, not bugs. }
+
 quiz:
-  - question: What does an image contain?
-    options: [A running process, A filesystem and metadata, A virtual machine]
+  - question: What does a container share with its host?
+    options: [Nothing, The host's kernel]
     answer: 1
-    explanation: An image is a read-only template; a container is a running instance of it.
----
+    explanation: Containers are processes on the host kernel.
 ```
 
-A course appears once its `course.json` has `"status": "published"`. Callouts work with
-`:::tip`, `:::note`, `:::caution` and `:::danger`.
+Set `status: published` in `course.json` to include a course in production
+builds; anything else is visible only in `npm run dev`.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together and how it is deployed.
+See **[ARCHITECTURE.md](ARCHITECTURE.md)** for the content model and the widget
+API, and **[docs/ROADMAP.md](docs/ROADMAP.md)** for what's next.

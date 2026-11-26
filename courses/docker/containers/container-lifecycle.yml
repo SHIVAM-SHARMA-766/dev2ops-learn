@@ -1,0 +1,79 @@
+title: The container lifecycle
+summary: From image to a running container and back — the states and the commands.
+minutes: 9
+difficulty: beginner
+order: 1
+
+scene:
+  widget: diagram
+  nodes:
+    - { id: img, label: Image, sub: docker pull, x: 12, y: 50 }
+    - { id: created, label: Created, sub: docker create, x: 36, y: 50 }
+    - { id: running, label: Running, sub: docker run, x: 60, y: 50 }
+    - { id: stopped, label: Stopped, sub: docker stop, x: 86, y: 28 }
+    - { id: removed, label: Removed, sub: docker rm, x: 86, y: 74 }
+  edges:
+    - [img, created]
+    - [created, running]
+    - [running, stopped]
+    - [stopped, running]
+    - [running, removed]
+    - [stopped, removed]
+  active:
+    - [img]
+    - [img, created]
+    - [img, created, running]
+    - [running, stopped]
+    - [stopped, removed]
+
+steps:
+  - kind: CONCEPT
+    title: It starts with an image
+    label: Image
+    body: >
+      Everything begins with an **image** — the read-only template. You get one
+      with `docker pull nginx` or by building your own.
+
+  - kind: CONCEPT
+    title: Create makes a container
+    label: Created
+    body: >
+      `docker create` turns an image into a **container** with its own writable
+      layer — but doesn't start it yet. In practice you rarely run this alone.
+
+  - kind: CONCEPT
+    title: Run = create + start
+    label: Running
+    body: >
+      `docker run nginx` creates **and** starts in one step. The container is now
+      a live, isolated process.
+    callout:
+      kind: TIP
+      text: "`docker ps` lists running containers; `docker ps -a` includes stopped ones."
+
+  - kind: CONCEPT
+    title: Stop and start again
+    label: Stopped
+    body: >
+      `docker stop` sends the process a signal to shut down. The container keeps
+      its writable layer, so `docker start` brings it back where it left off.
+
+  - kind: CONCEPT
+    title: Remove when done
+    label: Removed
+    body: >
+      `docker rm` deletes a stopped container and its writable layer for good.
+      The image stays — you can create a fresh container from it any time.
+    callout:
+      kind: REMEMBER
+      text: Removing a container never touches the image it came from.
+
+quiz:
+  - question: What's the difference between `docker create` and `docker run`?
+    options:
+      - run also starts the container, create does not
+      - create is for images, run is for containers
+      - there is no difference
+      - run is read-only
+    answer: 0
+    explanation: run = create + start. create prepares the container but leaves it stopped.

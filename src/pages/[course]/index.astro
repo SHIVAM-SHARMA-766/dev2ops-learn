@@ -1,0 +1,73 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCourses, getCourse } from '../../lib/courses.js';
+
+export function getStaticPaths() {
+  return getCourses().map((c) => ({ params: { course: c.slug } }));
+}
+
+const course = getCourse(Astro.params.course);
+if (!course) return Astro.redirect('/404');
+const first = course.chapters.flatMap((ch) => ch.lessons)[0];
+---
+
+<Base title={course.title} accent={course.accent} active="courses">
+  <div class="co" data-accent={course.accent}>
+    <a class="co__back mono" href="/">← All courses</a>
+    <div class="co__head">
+      <span class="co__icon">{course.icon || '◆'}</span>
+      <div>
+        <h1 class="co__title">{course.title}</h1>
+        <p class="co__tagline">{course.description}</p>
+        <div class="co__meta mono">
+          {course.level && <span class="badge badge--accent">{course.level}</span>}
+          <span>{course.lessonCount} lessons</span>
+          <span>{course.chapters.length} chapters</span>
+        </div>
+      </div>
+    </div>
+
+    {first && <a class="btn btn--accent co__start" href={first.path}>Start the course →</a>}
+
+    <ol class="co__chapters">
+      {course.chapters.map((ch, i) => (
+        <li class="co__chapter card">
+          <div class="co__chapterhead mono">
+            <span class="co__chapternum">{String(i + 1).padStart(2, '0')}</span>
+            {ch.title}
+            <span class="co__chaptercount">{ch.lessons.length} lessons</span>
+          </div>
+          <ul class="co__lessons">
+            {ch.lessons.map((l) => (
+              <li>
+                <a href={l.path} class="co__lesson">
+                  <span class="co__lessontitle">{l.title}</span>
+                  <span class="co__lessonmeta mono">{l.minutes ? `${l.minutes} min` : ''}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ol>
+  </div>
+</Base>
+
+<style>
+  .co { max-width: 760px; }
+  .co__back { color: var(--ink-soft); text-decoration: none; font-size: 13px; }
+  .co__head { display: flex; gap: 18px; align-items: flex-start; margin: 20px 0 22px; }
+  .co__icon { width: 60px; height: 60px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 30px; flex: none; }
+  .co__title { font-size: 30px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .co__tagline { color: var(--ink-soft); margin: 0 0 10px; }
+  .co__meta { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--ink-faint); }
+  .co__start { margin-bottom: 26px; }
+  .co__chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .co__chapterhead { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; }
+  .co__chapternum { color: var(--accent); }
+  .co__chaptercount { margin-left: auto; color: var(--ink-faint); font-weight: 400; font-size: 12px; }
+  .co__lessons { list-style: none; margin: 0; padding: 6px; }
+  .co__lesson { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; border-radius: 8px; text-decoration: none; color: var(--ink); }
+  .co__lesson:hover { background: var(--surface-2); }
+  .co__lessonmeta { color: var(--ink-faint); font-size: 12px; }
+</style>

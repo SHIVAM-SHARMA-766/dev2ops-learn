@@ -1,0 +1,80 @@
+title: Writing a Dockerfile
+summary: Each instruction is a layer. Read one, line by line.
+minutes: 10
+difficulty: beginner
+order: 1
+
+scene:
+  widget: codeWalk
+  filename: Dockerfile
+  lines:
+    - "FROM node:20-slim"
+    - ""
+    - "WORKDIR /app"
+    - ""
+    - "COPY package*.json ./"
+    - "RUN npm ci --omit=dev"
+    - ""
+    - "COPY . ."
+    - ""
+    - "EXPOSE 3000"
+    - "CMD [\"node\", \"server.js\"]"
+  highlights:
+    - [0]
+    - [2]
+    - [4, 5]
+    - [7]
+    - [9, 10]
+
+steps:
+  - kind: CONCEPT
+    title: Start FROM a base image
+    label: FROM
+    body: >
+      Every Dockerfile builds **on top of** another image. `node:20-slim` gives
+      you a small Debian with Node 20 already installed.
+
+  - kind: CONCEPT
+    title: Set the working directory
+    label: WORKDIR
+    body: >
+      `WORKDIR /app` creates and switches into a folder. Later `COPY` and `RUN`
+      lines run relative to it.
+
+  - kind: CONCEPT
+    title: Install deps before copying code
+    label: Dependencies
+    body: >
+      Copy only the lockfiles first, then install. Because each line is a cached
+      **layer**, your `npm ci` is reused on every build where dependencies
+      didn't change.
+    callout:
+      kind: KEY IDEA
+      text: Order instructions least-changing first, so the cache does the most work.
+
+  - kind: CONCEPT
+    title: Then copy the rest
+    label: Copy code
+    body: >
+      `COPY . .` brings in your source. It changes often, so it sits **after**
+      the dependency install to avoid busting that cache.
+
+  - kind: CONCEPT
+    title: Declare how to run it
+    label: Run command
+    body: >
+      `EXPOSE` documents the port; `CMD` is the process that starts when the
+      container runs. Build it with `docker build -t myapp .`
+    callout:
+      kind: TIP
+      text: CMD sets the default; `docker run myapp <other>` overrides it at launch.
+
+quiz:
+  - question: Why copy package files and install before copying the rest of the code?
+    options:
+      - To keep the image smaller
+      - So the dependency layer stays cached when only code changes
+      - It is required by npm
+      - To expose the port earlier
+    answer: 1
+    explanation: Layers cache top-to-bottom. Installing before the frequently-changing source keeps that slow step cached.

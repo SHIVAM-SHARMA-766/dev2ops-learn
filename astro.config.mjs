@@ -1,73 +1,20 @@
-// dev2ops learn: courses → chapters → lessons, built with Starlight.
-// The sidebar is generated from courses/*/course.json, so adding a course or a
-// chapter needs no code change.
+// dev2ops learn — an interactive course platform.
+//
+// One site, many courses. A course is a folder under courses/ with a
+// course.json and YAML lessons; see src/lib/courses.js for the content model.
+// Pages are static; the lesson "step player" is a React island.
+//
+// The build output is a plain static dist/, so the deploy pipeline
+// (.github + deploy/) is unchanged: rsync dist/ to the host, Caddy serves it.
 import { defineConfig } from 'astro/config';
-import starlight from '@astrojs/starlight';
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { parse as parseYaml } from 'yaml';
+import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
+import { readFileSync } from 'node:fs';
 
 const site = JSON.parse(readFileSync(new URL('./site.config.json', import.meta.url), 'utf8'));
-const coursesDir = new URL('./courses/', import.meta.url);
-
-const courses = readdirSync(coursesDir, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && existsSync(new URL(`${d.name}/course.json`, coursesDir)))
-  .map((d) => ({ slug: d.name, ...JSON.parse(readFileSync(new URL(`${d.name}/course.json`, coursesDir), 'utf8')) }))
-  .sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
-
-const published = courses.filter((c) => c.status === 'published');
-
-// Lessons of one chapter, sorted by `sidebar.order`. Listed explicitly by id:
-// Starlight's `autogenerate` only matches files inside src/content/docs.
-function chapterLessons(course, chapter) {
-  const dir = new URL(`${course}/${chapter}/`, coursesDir);
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter((f) => /\.mdx?$/.test(f))
-    .map((f) => {
-      const src = readFileSync(new URL(f, dir), 'utf8');
-      const fm = parseYaml(src.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? '') ?? {};
-      return { slug: `${course}/${chapter}/${f.replace(/\.mdx?$/, '')}`, order: fm.sidebar?.order ?? 999, draft: fm.draft === true };
-    })
-    .filter((l) => !l.draft || process.env.NODE_ENV !== 'production')
-    .sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug))
-    .map((l) => ({ slug: l.slug }));
-}
-
-const sidebar = [
-  { label: 'All courses', link: '/' },
-  ...published.map((c, i) => ({
-    label: `${c.icon ?? ''} ${c.title}`.trim(),
-    collapsed: i > 0,
-    items: [
-      { label: 'Course overview', slug: c.slug },
-      ...c.chapters.map((ch) => ({ label: ch.title, items: chapterLessons(c.slug, ch.slug) })),
-    ],
-  })),
-];
 
 export default defineConfig({
   site: site.url,
-  integrations: [
-    starlight({
-      title: site.title,
-      logo: { src: './src/assets/logo.svg', alt: '' },
-      description: site.description,
-      social: [
-        { icon: 'github', label: 'Source', href: site.github },
-        { icon: 'external', label: `${site.author.name}'s portfolio`, href: site.author.url },
-      ],
-      sidebar,
-      customCss: ['./src/styles/learn.css'],
-      // Lessons live outside src/content/docs, so Starlight's Markdown
-      // transforms (asides, heading links) must be told about the folder.
-      markdown: { processedDirs: ['./courses'] },
-      lastUpdated: true,
-      pagination: true,
-      components: {
-        Head: './src/components/Head.astro',
-        ThemeSelect: './src/components/ThemeSelect.astro',
-        Footer: './src/components/Footer.astro',
-      },
-    }),
-  ],
+  integrations: [react(), sitemap()],
+  build: { format: 'directory' },
 });

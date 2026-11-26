@@ -1,0 +1,91 @@
+title: Installing Docker
+summary: Get Docker running, and understand each line before you run it.
+minutes: 10
+difficulty: beginner
+order: 2
+
+scene:
+  widget: codeWalk
+  filename: install-on-ubuntu.sh
+  lines:
+    - "# 1. fetch Docker's install script"
+    - "curl -fsSL https://get.docker.com -o get-docker.sh"
+    - ""
+    - "# 2. read it before running anything from the internet"
+    - "less get-docker.sh"
+    - ""
+    - "# 3. run it"
+    - "sudo sh get-docker.sh"
+    - ""
+    - "# 4. run docker without sudo (re-login after)"
+    - "sudo usermod -aG docker \"$USER\""
+    - ""
+    - "# 5. prove the whole path works"
+    - "docker run hello-world"
+  highlights:
+    - [0, 1]
+    - [3, 4]
+    - [6, 7]
+    - [9, 10]
+    - [12, 13]
+
+steps:
+  - kind: STEP
+    title: Fetch the install script
+    label: Download
+    body: >
+      On Ubuntu or Debian the quickest route is Docker's convenience script.
+      Download it first — don't pipe straight into a shell.
+
+  - kind: HABIT
+    title: Read before you run
+    label: Read it
+    body: >
+      Any script you pull from the internet runs with your privileges. Skim it
+      so you know what it does.
+    callout:
+      kind: GOOD HABIT
+      text: "`curl … | sh` is convenient and risky. Download, read, then run."
+
+  - kind: STEP
+    title: Run the installer
+    label: Install
+    body: >
+      Now execute it with `sudo`. It adds Docker's package repo and installs the
+      engine and CLI.
+
+  - kind: STEP
+    title: Drop the sudo
+    label: Add to group
+    body: >
+      Add yourself to the `docker` group so you don't type `sudo` every time.
+      Log out and back in for it to take effect.
+    callout:
+      kind: CAUTION
+      text: The docker group is effectively root on that machine. Only add trusted users.
+
+  - kind: CHECK
+    title: Prove it works
+    label: hello-world
+    body: >
+      `docker run hello-world` pulls a tiny image and runs it. Seeing
+      **“Hello from Docker!”** means the whole path works: find image → pull →
+      create container → run.
+
+quiz:
+  - question: Which command checks that Docker can pull and run an image end to end?
+    options:
+      - docker version
+      - docker run hello-world
+      - docker ps
+      - docker info
+    answer: 1
+    explanation: hello-world pulls a tiny image and runs it, exercising the whole path.
+  - question: Why add your user to the `docker` group?
+    options:
+      - To run docker without sudo
+      - To make containers faster
+      - It is required to pull images
+      - To enable Docker Desktop
+    answer: 0
+    explanation: Group membership lets the CLI talk to the Docker daemon socket without sudo — which is also why it's root-equivalent.

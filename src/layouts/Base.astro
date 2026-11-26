@@ -1,0 +1,39 @@
+---
+import '../styles/app.css';
+import TopNav from '../components/TopNav.astro';
+import siteConfig from '../../site.config.json';
+
+const {
+  title,
+  description = siteConfig.description,
+  accent = 'green',
+  active = '',
+  wide = false,
+} = Astro.props;
+
+const fullTitle = title ? `${title} · ${siteConfig.title}` : siteConfig.title;
+---
+
+<!doctype html>
+<html lang="en" data-accent={accent}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{fullTitle}</title>
+    <link rel="icon" href="/favicon.svg" />
+    <script is:inline>
+      // Apply the saved theme before paint to avoid a flash.
+      try {
+        const t = localStorage.getItem('d2o-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <TopNav active={active} />
+    <main class={wide ? '' : 'wrap'} style={wide ? '' : 'padding-block: 32px 64px'}>
+      <slot />
+    </main>
+  </body>
+</html>

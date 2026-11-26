@@ -1,0 +1,47 @@
+# Roadmap & known limitations
+
+The platform is being built in phases. What exists now is a working vertical
+slice: the content model, the step-player engine, three visual widgets, the home
+and course pages, progress, light/dark, and the static build on the existing
+deploy pipeline. One course (Docker) is authored on it.
+
+## Done
+
+- [x] Astro (static) + React islands, replacing the Starlight docs theme
+- [x] Content model: `course.json` + YAML lessons with `scene` and `steps`
+- [x] Step-player engine: 3 panes, keyboard nav, step timeline
+- [x] Widget library v1: `stagedReveal`, `codeWalk`, `diagram`
+- [x] Home catalogue, course overview, 404
+- [x] Per-browser progress (completed ticks, progress bars)
+- [x] Light/dark + per-course accent
+- [x] Build checks green; sitemap
+
+## Next
+
+- [ ] **Search** (Ctrl+K) across lessons and concepts
+- [ ] **"Continue where you left off"** on home and course pages (data is already
+      stored in `localStorage`; surface it)
+- [ ] **More widgets** — timeline/sequence, metric tiles, before/after, terminal
+      replay — to cover more lesson shapes without custom code
+- [ ] **Author the next course** end-to-end (e.g. Git, Linux, CI/CD) to stress
+      the authoring loop and find schema gaps
+- [ ] **Lesson validation** at build time (zod schema for YAML) with clear errors
+- [ ] **Cheatsheets / Practice** tabs, as the templates have
+
+## Later
+
+- [ ] **Bespoke, hand-animated scenes** for flagship lessons (added as their own
+      widgets) — the per-lesson custom visuals are open-ended by nature
+- [ ] Per-lesson "resume at step" memory
+- [ ] Optional per-course theming beyond the accent (fonts, cover art)
+
+## Known limitations
+
+- The narration Markdown renderer is intentionally tiny (bold, italic, inline
+  code, bullet lists, paragraphs). It is not full Markdown — no tables, images or
+  links in narration yet.
+- The player ships JavaScript (`client:load`); the rest of the site is static.
+- Completion marks when the learner reaches the last step; the quiz is
+  reinforcement, not a gate.
+- Widget props are not yet schema-validated — a typo in a lesson's `scene`
+  surfaces as a blank or an "Unknown widget" note rather than a build error.

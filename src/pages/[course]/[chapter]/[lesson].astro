@@ -1,0 +1,56 @@
+---
+import Base from '../../../layouts/Base.astro';
+import StepPlayer from '../../../islands/StepPlayer.jsx';
+import { getCourse, getLesson, courseLessonOrder, allLessonParams } from '../../../lib/courses.js';
+
+export function getStaticPaths() {
+  return allLessonParams().map((p) => ({ params: p }));
+}
+
+const { course: courseSlug, chapter: chapterSlug, lesson: lessonSlug } = Astro.params;
+const course = getCourse(courseSlug);
+const lesson = getLesson(courseSlug, chapterSlug, lessonSlug);
+
+if (!course || !lesson) {
+  return Astro.redirect('/404');
+}
+
+// flat order for prev/next
+const flat = courseLessonOrder(course);
+const idx = flat.findIndex((l) => l.chapter === chapterSlug && l.slug === lessonSlug);
+const prev = idx > 0 ? flat[idx - 1] : null;
+const next = idx >= 0 && idx < flat.length - 1 ? flat[idx + 1] : null;
+
+// a lean sidebar tree for the island
+const tree = course.chapters.map((ch) => ({
+  slug: ch.slug,
+  title: ch.title,
+  lessons: ch.lessons.map((l) => ({ slug: l.slug, title: l.title, path: l.path })),
+}));
+---
+
+<Base
+  title={`${lesson.title} · ${course.title}`}
+  accent={course.accent}
+  active="courses"
+  wide={true}
+>
+  <StepPlayer
+    client:load
+    course={{ slug: course.slug, title: course.title, icon: course.icon, accent: course.accent, lessonCount: course.lessonCount }}
+    tree={tree}
+    lesson={{
+      slug: lesson.slug,
+      chapter: chapterSlug,
+      title: lesson.title,
+      summary: lesson.summary,
+      minutes: lesson.minutes,
+      difficulty: lesson.difficulty,
+      scene: lesson.scene,
+      steps: lesson.steps,
+      quiz: lesson.quiz,
+    }}
+    prev={prev ? { path: prev.path, title: prev.title } : null}
+    next={next ? { path: next.path, title: next.title } : null}
+  />
+</Base>

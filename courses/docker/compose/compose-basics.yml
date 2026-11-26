@@ -1,0 +1,82 @@
+title: Docker Compose basics
+summary: Describe a multi-container app in one file, bring it up with one command.
+minutes: 9
+difficulty: beginner
+order: 1
+
+scene:
+  widget: codeWalk
+  filename: compose.yaml
+  lines:
+    - "services:"
+    - "  web:"
+    - "    build: ."
+    - "    ports:"
+    - "      - \"3000:3000\""
+    - "    depends_on: [db]"
+    - "  db:"
+    - "    image: postgres:16"
+    - "    environment:"
+    - "      POSTGRES_PASSWORD: secret"
+    - "    volumes:"
+    - "      - dbdata:/var/lib/postgresql/data"
+    - "volumes:"
+    - "  dbdata:"
+  highlights:
+    - [0, 1]
+    - [2, 3, 4]
+    - [5, 6, 7]
+    - [8, 9]
+    - [10, 11, 12, 13]
+
+steps:
+  - kind: CONCEPT
+    title: One file, many services
+    label: Services
+    body: >
+      Compose describes a whole app as a set of **services**. Here `web` and
+      `db` — each becomes a container, on a shared private network.
+
+  - kind: CONCEPT
+    title: Build and publish ports
+    label: web
+    body: >
+      `web` is built from your local Dockerfile (`build: .`) and maps host port
+      3000 to the container's 3000 so you can reach it.
+
+  - kind: CONCEPT
+    title: Start order with depends_on
+    label: depends_on
+    body: >
+      `depends_on: [db]` makes Compose start the database first. Inside the
+      network, `web` reaches it at the hostname **db**.
+    callout:
+      kind: NOTE
+      text: depends_on waits for the container to start, not for Postgres to be ready — add a healthcheck for that.
+
+  - kind: CONCEPT
+    title: Config through environment
+    label: db
+    body: >
+      The `db` service uses the official `postgres:16` image and is configured
+      with environment variables — no custom Dockerfile needed.
+
+  - kind: CONCEPT
+    title: Keep data in a volume
+    label: Volumes
+    body: >
+      A **named volume** `dbdata` stores Postgres data outside the container, so
+      it survives `docker compose down`. Bring it all up with `docker compose up -d`.
+    callout:
+      kind: REMEMBER
+      text: Containers are disposable; volumes are where state lives.
+
+quiz:
+  - question: What does a named volume give you?
+    options:
+      - Faster container startup
+      - Data that survives the container being removed
+      - Automatic backups
+      - A second network
+    answer: 1
+    explanation: Volumes persist data independently of the container's own writable layer.

@@ -1,17 +1,16 @@
 {
   "title": "Docker from zero",
-  "description": "Containers explained from first principles: run, build and compose real applications with Docker.",
+  "tagline": "Containers from first principles — run, build and compose real apps.",
+  "description": "Containers explained from first principles: run, build and compose real applications with Docker, one step at a time.",
   "level": "Beginner",
-  "duration": "3 hours",
   "icon": "🐳",
+  "accent": "blue",
   "status": "published",
   "order": 1,
-  "tags": ["docker", "containers"],
-  "prerequisites": ["Basic Linux command line"],
   "chapters": [
-    { "slug": "introduction", "title": "1. Introduction" },
-    { "slug": "containers", "title": "2. Images & containers" },
-    { "slug": "dockerfile", "title": "3. Writing a Dockerfile" },
-    { "slug": "compose", "title": "4. Docker Compose" }
+    { "slug": "introduction", "title": "Introduction" },
+    { "slug": "containers", "title": "Images & containers" },
+    { "slug": "dockerfile", "title": "Writing a Dockerfile" },
+    { "slug": "compose", "title": "Docker Compose" }
   ]
 }

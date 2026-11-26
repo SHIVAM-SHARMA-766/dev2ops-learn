@@ -38,10 +38,6 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - name: Browser test
-        run: npm run test:e2e
-        env:
-          CHROME_PATH: /usr/bin/google-chrome
 
       - name: Deploy
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

@@ -1,0 +1,55 @@
+---
+import siteConfig from '../../site.config.json';
+const { active = '' } = Astro.props;
+const links = [
+  { href: '/', label: 'Courses', key: 'courses' },
+  { href: '/#how', label: 'How it works', key: 'how' },
+  { href: siteConfig.github, label: 'Source', key: 'source', external: true },
+];
+---
+
+<header class="topnav">
+  <div class="topnav__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark">d2</span>
+      <span>dev2ops <span class="brand__dim">learn</span></span>
+    </a>
+
+    <nav class="navlinks" aria-label="Primary">
+      {links.map((l) => (
+        <a
+          href={l.href}
+          aria-current={active === l.key ? 'page' : undefined}
+          target={l.external ? '_blank' : undefined}
+          rel={l.external ? 'noopener' : undefined}
+        >{l.label}</a>
+      ))}
+    </nav>
+
+    <div class="topnav__spacer"></div>
+
+    <button class="iconbtn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle light / dark">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<script is:inline>
+  (() => {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    const root = document.documentElement;
+    const current = () => {
+      if (root.dataset.theme) return root.dataset.theme;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+    btn.addEventListener('click', () => {
+      const next = current() === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try { localStorage.setItem('d2o-theme', next); } catch (e) {}
+    });
+  })();
+</script>
