@@ -1,108 +1,132 @@
-// BigOBlocks — a bespoke, reference-grade visual for the Big-O lesson:
-// a bold isometric staircase of hatched platforms (one complexity class each),
-// with unit-cubes on top showing the real step count at n = 2, consistent
-// "N steps" callouts, and an n tag wired to the tallest block.
+// BigOBlocks — a close replica of the reference "Big-O" scene, matching its
+// technique (studied from the live site): pure SVG, isometric blocks with
+// ROUNDED corners, a cream/blush/coral palette, hairline ink outlines and soft
+// shadows, on a dark panel. A staircase of platforms (one complexity class each)
+// with cream unit-cubes on top = the real step count at n = 2.
 import React from 'react';
 
-// 2:1 isometric box. a = half-width of the top diamond, H = body height.
-function isoBox(cx, topY, a, H) {
+const TOP = '#faf8f3';     // top faces
+const FRONT = '#f2eee7';   // front (left) face
+const BLUSH = '#fbe2d8';   // side (right) face
+const CORAL = '#e2705a';   // hatch
+const INK = '#2a2b2f';     // outlines / text
+
+// round every corner of a closed polygon with radius r (the reference's soft look)
+function roundPoly(pts, r) {
+  const n = pts.length;
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+  const len = (v) => Math.hypot(v[0], v[1]) || 1;
+  let d = '';
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n];
+    const v1 = sub(p0, p1), v2 = sub(p2, p1);
+    const r1 = Math.min(r, len(v1) / 2), r2 = Math.min(r, len(v2) / 2);
+    const A = [p1[0] + (v1[0] / len(v1)) * r1, p1[1] + (v1[1] / len(v1)) * r1];
+    const B = [p1[0] + (v2[0] / len(v2)) * r2, p1[1] + (v2[1] / len(v2)) * r2];
+    d += (i === 0 ? `M${A[0].toFixed(1)},${A[1].toFixed(1)}` : `L${A[0].toFixed(1)},${A[1].toFixed(1)}`);
+    d += `Q${p1[0].toFixed(1)},${p1[1].toFixed(1)} ${B[0].toFixed(1)},${B[1].toFixed(1)}`;
+  }
+  return d + 'Z';
+}
+
+// isometric box faces (2:1). a = half top-width, H = body height.
+function faces(cx, topY, a, H) {
   const hh = a / 2;
   return {
-    top: `M${cx},${topY - hh} L${cx + a},${topY} L${cx},${topY + hh} L${cx - a},${topY} Z`,
-    left: `M${cx - a},${topY} L${cx},${topY + hh} L${cx},${topY + hh + H} L${cx - a},${topY + H} Z`,
-    right: `M${cx + a},${topY} L${cx},${topY + hh} L${cx},${topY + hh + H} L${cx + a},${topY + H} Z`,
+    top: [[cx, topY - hh], [cx + a, topY], [cx, topY + hh], [cx - a, topY]],
+    left: [[cx - a, topY], [cx, topY + hh], [cx, topY + hh + H], [cx - a, topY + H]],
+    right: [[cx + a, topY], [cx, topY + hh], [cx, topY + hh + H], [cx + a, topY + H]],
   };
 }
 
-function UnitCube({ x, y, s = 12 }) {
-  const b = isoBox(x, y, s, s * 0.95);
+function Block({ cx, topY, a, H, r = 4, hatch = true, cube = false }) {
+  const f = faces(cx, topY, a, H);
+  const hair = { fill: 'none', stroke: INK, strokeWidth: cube ? 1 : 1.1, strokeLinejoin: 'round' };
   return (
     <g>
-      <path d={b.left} fill="#ece5d6" stroke="#2b2620" strokeOpacity="0.55" strokeWidth="1" />
-      <path d={b.right} fill="url(#boHatch)" stroke="#2b2620" strokeOpacity="0.55" strokeWidth="1" />
-      <path d={b.top} fill="#fbf7f0" stroke="#2b2620" strokeOpacity="0.55" strokeWidth="1" />
+      <path d={roundPoly(f.right, r)} fill={BLUSH} />
+      {hatch && <path d={roundPoly(f.right, r)} fill="url(#boHatch)" />}
+      <path d={roundPoly(f.right, r)} {...hair} />
+      <path d={roundPoly(f.left, r)} fill={FRONT} />
+      {hatch && <path d={roundPoly(f.left, r)} fill="url(#boHatch)" />}
+      <path d={roundPoly(f.left, r)} {...hair} />
+      <path d={roundPoly(f.top, r)} fill={TOP} />
+      <path d={roundPoly(f.top, r)} {...hair} />
     </g>
   );
 }
 
-// cube positions on a platform's top diamond (u,v in 0..1 across the two axes)
 function cubeSpots(cx, topY, a, count) {
-  const layouts = {
-    1: [[0.5, 0.5]],
-    2: [[0.25, 0.75], [0.75, 0.25]],
-    3: [[0.25, 0.75], [0.75, 0.25], [0.75, 0.75]],
-    4: [[0.22, 0.78], [0.78, 0.22], [0.22, 0.22], [0.78, 0.78]],
-  };
-  return (layouts[count] || layouts[1]).map(([u, v], i) => ({
-    key: i,
-    x: cx + (u - v) * a * 0.9,
-    y: topY + (u + v - 1) * (a * 0.5) - 6,
-  }));
+  const L = { 1: [[0.5, 0.5]], 2: [[0.28, 0.72], [0.72, 0.28]], 4: [[0.24, 0.76], [0.76, 0.24], [0.24, 0.24], [0.76, 0.76]] };
+  return (L[count] || L[1]).map(([u, v], i) => ({ key: i, x: cx + (u - v) * a * 0.82, y: topY + (u + v - 1) * (a * 0.5) - 5 }));
 }
 
 const PLAT = [
-  { cx: 78, bottomY: 292, H: 40, a: 46 },
-  { cx: 174, bottomY: 288, H: 74, a: 46 },
-  { cx: 272, bottomY: 284, H: 116, a: 46 },
-  { cx: 374, bottomY: 280, H: 176, a: 46 },
+  { cx: 92, bottomY: 300, H: 44, a: 45 },
+  { cx: 214, bottomY: 300, H: 84, a: 45 },
+  { cx: 336, bottomY: 300, H: 128, a: 45 },
+  { cx: 458, bottomY: 300, H: 184, a: 45 },
 ];
 
-export default function BigOBlocks({ items = [], nLabel = 'n = 2', caption, activeStep = 0 }) {
+export default function BigOBlocks({ items = [], nLabel = 'n = 2', activeStep = 0 }) {
   return (
     <div className="w-bigo">
-      <svg viewBox="0 0 480 320" className="bigo-svg" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 0 560 356" className="bigo-svg" preserveAspectRatio="xMidYMid meet">
         <defs>
-          <pattern id="boHatch" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(55)">
-            <rect width="7" height="7" fill="#f3eee4" />
-            <line x1="0" y1="0" x2="0" y2="7" stroke="#d94f32" strokeWidth="3.6" strokeOpacity="0.92" />
+          <pattern id="boHatch" width="6.4" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
+            <rect width="3" height="8" fill={CORAL} />
           </pattern>
+          <pattern id="boGrid" width="34" height="34" patternUnits="userSpaceOnUse">
+            <path d="M34 0 L0 0 0 34" fill="none" stroke="#ffffff" strokeOpacity="0.05" strokeWidth="1" />
+          </pattern>
+          <filter id="boShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="7" stdDeviation="7" floodColor="#000" floodOpacity="0.28" />
+          </filter>
         </defs>
+
+        <rect x="0" y="0" width="560" height="356" rx="18" fill="#1b1712" />
+        <rect x="0" y="0" width="560" height="356" rx="18" fill="url(#boGrid)" />
 
         {items.map((it, i) => {
           const P = PLAT[i];
           if (!P) return null;
           const topY = P.bottomY - P.H - P.a / 2;
-          const b = isoBox(P.cx, topY, P.a, P.H);
           const shown = activeStep >= i;
-          const active = activeStep === i;
           return (
-            <g key={i} opacity={shown ? 1 : 0.16} style={{ transition: 'opacity 0.35s' }}>
-              <path d={b.right} fill="url(#boHatch)" />
-              <path d={b.left} fill="#2e2821" />
-              {active && <path d={b.left} fill="var(--accent)" opacity="0.22" />}
-              <path d={b.top} fill="#efe8da" />
-              <path d={b.top} fill="#fff" opacity="0.16" />
-              <path d={`${b.top} ${b.left} ${b.right}`} fill="none" stroke="#1f1b16" strokeOpacity="0.5" strokeWidth="1.4" />
-              {/* label centred on the dark front face */}
-              <text x={P.cx - P.a * 0.5} y={topY + P.H * 0.6} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11.5" fontWeight="700" fill="#fbf7f0">{it.label}</text>
-              {/* unit cubes on top */}
-              {shown && cubeSpots(P.cx, topY, P.a, it.cubes).map((c) => <UnitCube key={c.key} x={c.x} y={c.y} />)}
+            <g key={i} opacity={shown ? 1 : 0.25} style={{ transition: 'opacity 0.4s ease' }}>
+              <g filter="url(#boShadow)"><Block cx={P.cx} topY={topY} a={P.a} H={P.H} /></g>
+              <g>
+                <rect x={P.cx - P.a * 0.5 - 30} y={topY + P.H - 26} width="60" height="22" rx="7" fill={TOP} />
+                <text x={P.cx - P.a * 0.5} y={topY + P.H - 11} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12.5" fontWeight="700" fill={INK}>{it.label}</text>
+              </g>
+              {shown && cubeSpots(P.cx, topY, P.a, it.cubes).map((c) => (
+                <Block key={c.key} cx={c.x} topY={c.y} a={10} H={10} r={2.5} hatch={false} cube />
+              ))}
             </g>
           );
         })}
 
-        {/* N-steps callouts — a second pass so they sit on top of every block */}
         {items.map((it, i) => {
           const P = PLAT[i];
           if (!P || activeStep < i) return null;
           const topY = P.bottomY - P.H - P.a / 2;
+          const bx = P.cx + P.a + 7, by = topY + 4;
           return (
-            <g key={`cb${i}`} transform={`translate(${P.cx + P.a + 4}, ${topY + 6})`}>
-              <rect x="0" y="-12" width="58" height="24" rx="12" fill="#2b2620" />
-              <text x="29" y="4" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12" fontWeight="700" fill="#fbf7f0">{it.cubes} {it.cubes === 1 ? 'step' : 'steps'}</text>
+            <g key={`cb${i}`}>
+              <path d={`M${bx - 7},${by} L${bx + 2},${by - 5} L${bx + 2},${by + 5} Z`} fill="#faf8f3" />
+              <rect x={bx} y={by - 13} width="62" height="26" rx="13" fill="#faf8f3" />
+              <text x={bx + 31} y={by + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12" fontWeight="700" fill={INK}>{it.cubes} {it.cubes === 1 ? 'step' : 'steps'}</text>
             </g>
           );
         })}
 
-        {/* n tag, wired to the tallest block's top */}
-        <line x1="330" y1="78" x2="374" y2="98" stroke="var(--accent)" strokeWidth="2.5" />
-        <circle cx="374" cy="98" r="3.5" fill="var(--accent)" />
-        <g transform="translate(262, 54)">
-          <rect x="0" y="0" width="74" height="30" rx="8" fill="var(--accent)" />
-          <text x="37" y="20" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="14" fontWeight="700" fill="#fff">{nLabel}</text>
+        <line x1="392" y1="56" x2="458" y2="98" stroke={CORAL} strokeWidth="2.5" />
+        <circle cx="458" cy="98" r="4" fill={CORAL} />
+        <g transform="translate(322, 36)">
+          <rect x="0" y="0" width="80" height="32" rx="10" fill={CORAL} />
+          <text x="40" y="21" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="15" fontWeight="700" fill="#fff">{nLabel}</text>
         </g>
       </svg>
-      {caption && <div className="w-caption mono">{caption}</div>}
     </div>
   );
 }
