@@ -6,40 +6,40 @@ order: 1
 
 scene:
   widget: bigOBlocks
-  nLabel: "n = 4"
-  caption: "each cube is one step of work, for an input of n = 4"
+  nLabel: "n = 2"
+  caption: "each small cube is one step of work, for an input of just n = 2"
   items:
-    - { label: "O(1)", blocks: 1 }
-    - { label: "O(log n)", blocks: 2 }
-    - { label: "O(n)", blocks: 4 }
-    - { label: "O(n²)", blocks: 16 }
+    - { label: "O(1)", cubes: 1 }
+    - { label: "O(log n)", cubes: 1 }
+    - { label: "O(n)", cubes: 2 }
+    - { label: "O(n²)", cubes: 4 }
 
 steps:
   - kind: CONCEPT
-    title: O(1) — constant
+    title: Count steps, not seconds
     label: O(1)
     body: >
       How fast is an algorithm? Seconds depend on the machine, so we count
-      **steps** instead, and ask how that count grows with the input **n**.
+      **steps** instead and ask how that count grows with the input **n**.
       **O(1)** does the same work no matter how big n is — one cube, always. An
       array index, a hash lookup. The gold standard.
     callout:
       kind: KEY IDEA
-      text: Big-O describes growth, not exact speed. On small inputs almost anything is fast.
+      text: On small inputs almost anything is fast. The differences show when n grows.
 
   - kind: CONCEPT
     title: O(log n) — logarithmic
     label: O(log n)
     body: >
       **O(log n)** halves the problem each step — binary search, balanced trees.
-      At n = 4 that's just **2** steps; double n and you add only **one** more
-      cube. Wonderfully scalable.
+      At n = 2 it's still just **1** step; double n to 4 and you add only **one**
+      more. Wonderfully scalable.
 
   - kind: CONCEPT
     title: O(n) — linear
     label: O(n)
     body: >
-      **O(n)** touches every item once — a scan. 4 items, 4 cubes. (The good
+      **O(n)** touches every item once — a scan. 2 items, **2** cubes. (The good
       sorts are **O(n log n)**: a scan times a logarithmic factor — merge, heap,
       quicksort.)
 
@@ -47,9 +47,9 @@ steps:
     title: O(n²) — the trap
     label: O(n²)
     body: >
-      **O(n²)** compares every item with every other — nested loops. At n = 4 it's
-      already **16** cubes; at n = 1000 it's a **million**. This is the complexity
-      that quietly kills performance at scale.
+      **O(n²)** compares every item with every other — nested loops. At n = 2 it's
+      already **4** cubes. Double n to 4 → 16. At n = 1000 → a **million**. This
+      is the complexity that quietly kills performance at scale.
     callout:
       kind: TAKEAWAY
       text: On big inputs the class is everything. An O(n log n) solution crushes an O(n²) one.
