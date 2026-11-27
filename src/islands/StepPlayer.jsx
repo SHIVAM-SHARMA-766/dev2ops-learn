@@ -16,9 +16,18 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
   const [toast, setToast] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [expanded, setExpanded] = useState(() => new Set([lesson.chapter]));
   const railRef = useRef(null);
   const timelineRef = useRef(null);
+  const currentLessonRef = useRef(null);
   const current = steps[step] || {};
+
+  const toggleChapter = (slug) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(slug) ? next.delete(slug) : next.add(slug);
+      return next;
+    });
 
   const go = useCallback(
     (to) => setStep((s) => Math.max(0, Math.min(total - 1, typeof to === 'function' ? to(s) : to))),
@@ -85,6 +94,11 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
     return () => clearTimeout(t);
   }, [playing, step, total]);
 
+  // bring the current lesson into view in the sidebar on open
+  useEffect(() => {
+    currentLessonRef.current?.scrollIntoView({ block: 'center' });
+  }, []);
+
   // on step change: reset the narration scroll, keep the active timeline step in view
   useEffect(() => {
     if (railRef.current) railRef.current.scrollTop = 0;
@@ -118,30 +132,50 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
         </div>
 
         <nav className="side__tree" aria-label="Lessons">
-          {tree.map((ch, ci) => (
-            <div key={ch.slug} className="side__chapter">
-              <div className="side__chaptertitle mono">
-                <span className="side__chapternum">{String(ci + 1).padStart(2, '0')}</span>
-                {ch.title}
+          {tree.map((ch, ci) => {
+            const doneHere = ch.lessons.filter((l) => done[`${ch.slug}/${l.slug}`]).length;
+            const isOpen = expanded.has(ch.slug);
+            const chapterDone = doneHere === ch.lessons.length && ch.lessons.length > 0;
+            return (
+              <div key={ch.slug} className={`side__chapter ${isOpen ? 'is-open' : ''}`}>
+                <button
+                  className="side__chaptertitle mono"
+                  onClick={() => toggleChapter(ch.slug)}
+                  aria-expanded={isOpen}
+                >
+                  <span className="side__chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+                  <span className="side__chapternum">{String(ci + 1).padStart(2, '0')}</span>
+                  <span className="side__chaptername">{ch.title}</span>
+                  <span className={`side__chaptercount ${chapterDone ? 'is-done' : ''}`}>
+                    {chapterDone ? '✓' : `${doneHere}/${ch.lessons.length}`}
+                  </span>
+                </button>
+                {isOpen && (
+                  <ul className="side__lessons">
+                    {ch.lessons.map((l) => {
+                      const isCurrent = ch.slug === lesson.chapter && l.slug === lesson.slug;
+                      const isDone = done[`${ch.slug}/${l.slug}`];
+                      return (
+                        <li key={l.slug}>
+                          <a
+                            href={l.path}
+                            ref={isCurrent ? currentLessonRef : undefined}
+                            className={`side__lesson ${isCurrent ? 'is-current' : ''}`}
+                            aria-current={isCurrent ? 'page' : undefined}
+                          >
+                            <span className={`side__tick ${isDone ? 'is-done' : ''}`} aria-hidden="true">
+                              {isDone ? '✓' : '○'}
+                            </span>
+                            <span>{l.title}</span>
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
-              <ul className="side__lessons">
-                {ch.lessons.map((l) => {
-                  const isCurrent = ch.slug === lesson.chapter && l.slug === lesson.slug;
-                  const isDone = done[`${ch.slug}/${l.slug}`];
-                  return (
-                    <li key={l.slug}>
-                      <a href={l.path} className={`side__lesson ${isCurrent ? 'is-current' : ''}`} aria-current={isCurrent ? 'page' : undefined}>
-                        <span className={`side__tick ${isDone ? 'is-done' : ''}`} aria-hidden="true">
-                          {isDone ? '✓' : '○'}
-                        </span>
-                        <span>{l.title}</span>
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+            );
+          })}
         </nav>
       </aside>
 

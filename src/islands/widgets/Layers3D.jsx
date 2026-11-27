@@ -109,7 +109,7 @@ export default function Layers3D({ layers = [], writable, activeStep = 0 }) {
     controls.dampingFactor = 0.08;
     controls.enablePan = false;
     controls.enableZoom = false;
-    controls.autoRotate = true;
+    controls.autoRotate = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     controls.autoRotateSpeed = 1.1;
     controls.minPolarAngle = Math.PI * 0.18;
     controls.maxPolarAngle = Math.PI * 0.46;
