@@ -1,65 +1,63 @@
 title: The two kernel features behind containers
-summary: Namespaces isolate what a container sees; cgroups limit what it uses.
+summary: Watch an ordinary process get walled off, then capped.
 minutes: 8
 difficulty: intermediate
 order: 2
 
 scene:
-  widget: stagedReveal
-  caption: No magic — just Linux features Docker orchestrates for you.
-  items:
-    - label: PID namespace
-      note: Its own process tree — the container's main app is PID 1, can't see host processes.
-      tag: isolate
-    - label: Network namespace
-      note: Its own interfaces, IP and routing table.
-      tag: isolate
-    - label: Mount namespace
-      note: Its own filesystem view — the image, not the host's disk.
-      tag: isolate
-    - label: User namespace
-      note: Map container root to an unprivileged host user.
-      tag: isolate
-    - label: cgroups
-      note: Cap CPU, memory, I/O and PIDs — what the container can USE.
-      tag: limit
+  widget: isolationBox
 
 steps:
   - kind: CONCEPT
-    title: There is no "container" in Linux
-    label: No magic
+    title: It starts as an ordinary process
+    label: process
     body: >
-      The kernel has no "container" object. A container is an ordinary process
-      that Docker wraps in two kinds of kernel feature. That's the whole trick.
+      There is no "container" object in Linux. A container begins as a plain
+      process — the kernel just wraps it in two kinds of feature. Watch them get
+      added one by one.
 
   - kind: CONCEPT
-    title: Namespaces — what it can SEE
-    label: Namespaces
+    title: PID namespace — its own process tree
+    label: PID ns
     body: >
-      **Namespaces** give a process its own private view of the system. A
-      separate PID namespace means it sees its own process tree; a network
-      namespace gives it its own interfaces and IP.
+      The first wall: a **PID namespace**. Inside, the process sees only its own
+      process tree — it's PID 1 and can't see the host's processes at all.
+
+  - kind: CONCEPT
+    title: Network namespace — its own stack
+    label: NET ns
+    body: >
+      A **network namespace** gives it private interfaces, its own IP and routing
+      table. It feels like it has its own network card.
+
+  - kind: CONCEPT
+    title: Mount namespace — its own filesystem
+    label: MNT ns
+    body: >
+      A **mount namespace** gives it its own filesystem view — the image, not the
+      host's disk. Same kernel, a completely separate world.
     callout:
       kind: KEY IDEA
-      text: Same kernel, separate views. That's why it feels like its own little machine.
+      text: Namespaces = isolation. Same kernel, separate views of PIDs, network, mounts, users.
 
   - kind: CONCEPT
-    title: More namespaces, more isolation
-    label: More
+    title: User namespace — safe root
+    label: USER ns
     body: >
-      Mount namespace → its own filesystem (the image). User namespace → its
-      "root" can map to a harmless host user. Stack them and the process is
-      sealed off, cheaply.
+      A **user namespace** can map "root" inside the container to an unprivileged
+      user on the host. Now the box is fully sealed — isolated, cheaply, with no
+      second OS.
 
   - kind: CONCEPT
-    title: cgroups — what it can USE
+    title: cgroups — cap what it can use
     label: cgroups
     body: >
-      **Control groups** cap resources: CPU shares, memory, disk I/O, number of
-      processes. This is what `--memory` and `--cpus` actually configure.
+      Isolation says what it can **see**; **cgroups** say what it can **use** —
+      CPU, memory, I/O, process count. The meter fills to a limit and stops there.
+      That's what `--memory` and `--cpus` configure.
     callout:
       kind: REMEMBER
-      text: Namespaces = isolation (what you see). cgroups = limits (what you use). Together = a container.
+      text: Namespaces (what you see) + cgroups (what you use) = a container. No magic, just the kernel.
 
 quiz:
   - question: Which kernel feature limits how much memory a container can use?

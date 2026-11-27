@@ -13,6 +13,8 @@ import ShipScene from './ShipScene.jsx';
 import LayerStack from './LayerStack.jsx';
 import VmVsContainer from './VmVsContainer.jsx';
 import VolumeScene from './VolumeScene.jsx';
+import IsolationBox from './IsolationBox.jsx';
+import SizeScale from './SizeScale.jsx';
 
 const REGISTRY = {
   stagedReveal: StagedReveal,
@@ -26,6 +28,8 @@ const REGISTRY = {
   layerStack: LayerStack,
   vmVsContainer: VmVsContainer,
   volumeScene: VolumeScene,
+  isolationBox: IsolationBox,
+  sizeScale: SizeScale,
 };
 
 export function Scene({ scene, activeStep, steps }) {
