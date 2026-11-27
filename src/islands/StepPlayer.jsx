@@ -1,7 +1,7 @@
 // StepPlayer — the lesson engine. Three panes (chapter tree · scene · step
 // narration) plus a step timeline. Steps drive the scene; progress is saved
 // per browser. This one component renders every lesson of every course.
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import '../styles/player.css';
 import { Scene } from './widgets/index.jsx';
 import { Markdown } from './md.jsx';
@@ -15,6 +15,9 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
   const [done, setDone] = useState({}); // "chapter/slug" -> true, hydrated on client
   const [toast, setToast] = useState(null);
   const [playing, setPlaying] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  const railRef = useRef(null);
+  const timelineRef = useRef(null);
   const current = steps[step] || {};
 
   const go = useCallback(
@@ -82,13 +85,21 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
     return () => clearTimeout(t);
   }, [playing, step, total]);
 
+  // on step change: reset the narration scroll, keep the active timeline step in view
+  useEffect(() => {
+    if (railRef.current) railRef.current.scrollTop = 0;
+    const el = timelineRef.current?.querySelector('.timeline__step.is-active');
+    el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [step]);
+
   const scene = current.viz || lesson.scene; // per-step override, else lesson scene
   const doneCount = Object.keys(done).length;
   const atLast = step === total - 1;
 
   return (
-    <div className="player" data-accent={course.accent}>
+    <div className={`player ${navOpen ? 'is-navopen' : ''}`} data-accent={course.accent}>
       {toast && <div className="player__toast mono" role="status">{toast}</div>}
+      {navOpen && <div className="player__scrim" onClick={() => setNavOpen(false)} />}
       {/* ---- left: chapter tree + progress ---- */}
       <aside className="player__side">
         <a className="side__course" href="/">
@@ -137,11 +148,25 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
       {/* ---- center: scene + timeline ---- */}
       <section className="player__stage">
         <div className="stage__head">
-          <div>
-            <div className="stage__crumb mono">{course.title} · {lesson.chapter}</div>
-            <h1 className="stage__title">{lesson.title}</h1>
+          <div className="stage__headmain">
+            <button className="stage__menu" onClick={() => setNavOpen(true)} aria-label="Open lessons">☰</button>
+            <div>
+              <div className="stage__crumb mono">
+                <a href={`/${course.slug}`}>{course.title}</a> · {lesson.chapter}
+                {done[`${lesson.chapter}/${lesson.slug}`] && <span className="stage__crumbdone"> · ✓ completed</span>}
+              </div>
+              <h1 className="stage__title">{lesson.title}</h1>
+            </div>
           </div>
           <div className="stage__meta">
+            <div className="stage__lessonnav">
+              {prev
+                ? <a className="stage__navbtn" href={prev.path} title={`Previous: ${prev.title}`} aria-label="Previous lesson">←</a>
+                : <span className="stage__navbtn is-off" aria-hidden="true">←</span>}
+              {next
+                ? <a className="stage__navbtn" href={next.path} title={`Next: ${next.title}`} aria-label="Next lesson">→</a>
+                : <span className="stage__navbtn is-off" aria-hidden="true">→</span>}
+            </div>
             {lesson.minutes && <span className="badge">{lesson.minutes} min</span>}
             {lesson.difficulty && <span className="badge">{lesson.difficulty}</span>}
             <span className="badge">{total} steps</span>
@@ -166,7 +191,7 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
             </span>
             <span>Step {step + 1} of {total}</span>
           </div>
-          <ol className="timeline__steps">
+          <ol className="timeline__steps" ref={timelineRef}>
             {steps.map((s, i) => (
               <li key={i}>
                 <button
@@ -185,7 +210,7 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
 
       {/* ---- right: step narration ---- */}
       <aside className="player__rail">
-        <div className="rail__scroll">
+        <div className="rail__scroll" ref={railRef}>
           <div className="rail__head mono">
             <span>Step {step + 1} / {total}</span>
             {current.kind && <span className="rail__kind">{current.kind}</span>}

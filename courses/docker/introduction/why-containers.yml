@@ -1,76 +1,74 @@
 title: Why not just a VM?
-summary: Containers vs virtual machines — same goal, very different weight.
+summary: Watch where a VM's weight goes — and why containers travel light.
 minutes: 6
 difficulty: beginner
 order: 2
 
 scene:
-  widget: compare
-  left:
-    title: Virtual Machine
-    items:
-      - Ships its own full OS kernel
-      - Measured in gigabytes
-      - Boots in tens of seconds
-      - A few per laptop before it melts
-      - Strong isolation (separate kernel)
-  right:
-    title: Container
-    items:
-      - Shares the host's kernel
-      - Measured in megabytes
-      - Starts in milliseconds
-      - Dozens happily on one laptop
-      - Process-level isolation
-  highlight:
-    - [0]
-    - [1, 2]
-    - [3]
-    - [4]
+  widget: vmVsContainer
 
 steps:
   - kind: CONCEPT
-    title: Both solve the same problem
-    label: Same goal
+    title: Both start with hardware
+    label: Hardware
     body: >
-      VMs and containers both give you an isolated, reproducible environment.
-      The difference is **what they carry** to do it.
+      A VM and a container both end up running your app on the same physical
+      machine. The difference is **how much they stack on top** of the hardware to
+      get there.
 
   - kind: CONCEPT
-    title: A VM carries a whole OS
-    label: VM = heavy
+    title: A VM brings a whole OS
+    label: One VM
     body: >
-      A virtual machine virtualises **hardware** and boots a full guest OS,
-      kernel and all. That's gigabytes on disk and seconds to start — powerful,
-      but heavy.
-
-  - kind: CONCEPT
-    title: A container shares the kernel
-    label: Container = light
-    body: >
-      A container is just an **isolated process** on the host's existing kernel.
-      No second OS to boot. Megabytes, and up in milliseconds.
+      A virtual machine runs a **hypervisor**, and on top of it a full **guest
+      OS** — its own kernel — just to run one app. That's gigabytes and tens of
+      seconds to boot.
     callout:
-      kind: SO THAT
-      text: You can run a whole microservice stack on one modest machine.
+      kind: NOTICE
+      text: Every VM carries its own operating system. That's where the weight comes from.
 
-  - kind: NOTICE
-    title: The trade-off
-    label: Trade-off
+  - kind: CONCEPT
+    title: Each VM repeats that weight
+    label: Two VMs
     body: >
-      Sharing a kernel means slightly weaker isolation than a VM. For most apps
-      that's a great deal — and you can run containers *inside* VMs when you want
-      both. (That's exactly what Docker Desktop does on Mac and Windows.)
+      Want a second app isolated? Another **entire OS**. The host fills up fast —
+      a laptop handles only a few VMs before it strains.
+
+  - kind: CONCEPT
+    title: Containers share the kernel
+    label: Containers
+    body: >
+      Containers skip all that. They share the **host's single kernel** and add
+      only your app — megabytes, up in milliseconds. One kernel, many isolated
+      processes.
+    callout:
+      kind: KEY IDEA
+      text: No second OS to boot. That's why a container starts in a blink and a VM takes seconds.
+
+  - kind: CONCEPT
+    title: So you can run many
+    label: Many
+    body: >
+      Because each container is light, dozens run happily where only a few VMs
+      would fit. Same isolation goal, a fraction of the cost.
     callout:
       kind: TL;DR
-      text: VM = own kernel, heavy, strong walls. Container = shared kernel, light, fast.
+      text: VM = own kernel, heavy, few. Container = shared kernel, light, many.
 
 quiz:
   - question: Why does a container start so much faster than a VM?
     options:
       - It has fewer files
-      - It doesn't boot its own OS kernel
+      - It doesn't boot its own OS kernel — it shares the host's
       - It skips networking
       - It runs on a faster CPU
     answer: 1
     explanation: No guest OS to boot — a container is just a process on the host kernel.
+  - question: What mainly makes a VM "heavy"?
+    options:
+      - The app
+      - It carries a full guest operating system
+      - The hypervisor name
+      - Its IP address
+    answer: 1
+    explanation: Each VM ships and boots its own OS kernel; containers share the host's.

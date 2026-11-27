@@ -1,74 +1,71 @@
 title: Where did my data go?
-summary: The classic "I lost my database" moment — and why.
+summary: Watch data vanish with a container — then watch a volume save it.
 minutes: 7
 difficulty: beginner
 order: 1
 
 scene:
-  widget: terminalReplay
-  blocks:
-    - cmd: docker run -d --name db postgres:16 -e POSTGRES_PASSWORD=secret
-      out: |
-        9a8b7c6d5e4f…
-    - cmd: docker exec -it db psql -U postgres -c "CREATE TABLE notes(t text);"
-      out: |
-        CREATE TABLE
-    - cmd: docker rm -f db
-      out: |
-        db
-    - cmd: docker run -d --name db postgres:16 -e POSTGRES_PASSWORD=secret
-      out: |
-        1f2e3d4c5b6a…
-    - cmd: docker exec -it db psql -U postgres -c "\dt"
-      out: |
-        Did not find any relations.
-        (your table is gone 😱)
+  widget: volumeScene
 
 steps:
   - kind: STORY
-    title: Spin up a database
-    label: Create
+    title: The container writes data
+    label: Writes
     body: >
-      You run Postgres in a container and create a table. Everything works. You
-      feel great.
-
-  - kind: STORY
-    title: Add some data
-    label: Write
-    body: >
-      The container writes the table into its **writable layer** — that thin
-      scratch layer on top of the image.
-
-  - kind: STORY
-    title: Remove the container
-    label: "rm -f"
-    body: >
-      Later you `docker rm -f db` to recreate it with new settings. Routine.
-      Except…
+      You run a database and it writes its data. By default that data lives in the
+      container's own **writable layer** — inside the container itself.
 
   - kind: PROBLEM
-    title: Everything's gone
+    title: Remove it — and it's gone
     label: 💀 gone
     body: >
-      The writable layer went **with** the container. Your table never existed
+      Later you `docker rm -f` the container to recreate it with new settings.
+      Routine. But the writable layer went **with** it — the data never existed
       anywhere else. This bites everyone exactly once.
     callout:
       kind: THE RULE
-      text: A container's filesystem is disposable. If you removed the container, you removed its data.
+      text: A container's filesystem is disposable. Remove the container, remove its data.
 
   - kind: CONCEPT
-    title: The fix (next lesson)
-    label: The fix
+    title: Put the data in a volume
+    label: Volume
     body: >
-      Store state **outside** the container, in a **volume**. The container stays
-      disposable; the data lives on. That's exactly what we'll do next.
+      The fix: store the data in a **volume** — storage that lives **outside** the
+      container, managed by Docker. The container writes to it, but it isn't part
+      of the container.
+
+  - kind: CONCEPT
+    title: Now removal is safe
+    label: ✓ survives
+    body: >
+      Remove the container now and the **volume stays**. Your data is untouched,
+      sitting safely outside the disposable container.
+    callout:
+      kind: KEY IDEA
+      text: Containers are cattle, not pets. Volumes are where the state you care about lives.
+
+  - kind: CONCEPT
+    title: Reconnect and carry on
+    label: Re-attach
+    body: >
+      Start a **fresh** container with the same volume and the data is right there.
+      Upgrade the image, change settings, recreate freely — the data persists
+      across all of it.
 
 quiz:
-  - question: Why did the table disappear?
+  - question: Why did the data disappear when the container was removed?
     options:
-      - Postgres crashed
+      - The database crashed
       - It lived in the container's writable layer, removed with the container
       - The password was wrong
       - Docker deleted it on purpose
     answer: 1
     explanation: No volume = data in the ephemeral writable layer, gone when the container is removed.
+  - question: What makes data survive a container being recreated?
+    options:
+      - Nothing, it always survives
+      - Storing it in a volume, outside the container
+      - A bigger image
+      - Running as root
+    answer: 1
+    explanation: A volume lives outside the container's lifecycle, so the data persists across recreation.
