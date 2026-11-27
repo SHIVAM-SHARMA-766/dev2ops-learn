@@ -12,7 +12,7 @@ const first = course.chapters.flatMap((ch) => ch.lessons)[0];
 ---
 
 <Base title={course.title} accent={course.accent} active="courses">
-  <div class="co" data-accent={course.accent}>
+  <div class="co" data-accent={course.accent} data-course={course.slug}>
     <a class="co__back mono" href="/">← All courses</a>
     <div class="co__head">
       <span class="co__icon">{course.icon || '◆'}</span>
@@ -27,20 +27,28 @@ const first = course.chapters.flatMap((ch) => ch.lessons)[0];
       </div>
     </div>
 
-    {first && <a class="btn btn--accent co__start" href={first.path}>Start the course →</a>}
+    <div class="co__progress" hidden>
+      <div class="co__progressbar"><span></span></div>
+      <span class="co__progresstext mono"></span>
+    </div>
+
+    <a class="btn btn--accent co__start" href={first ? first.path : '#'} data-firstpath={first ? first.path : ''}>
+      Start the course →
+    </a>
 
     <ol class="co__chapters">
       {course.chapters.map((ch, i) => (
-        <li class="co__chapter card">
+        <li class="co__chapter card" data-chapter={ch.slug}>
           <div class="co__chapterhead mono">
             <span class="co__chapternum">{String(i + 1).padStart(2, '0')}</span>
             {ch.title}
-            <span class="co__chaptercount">{ch.lessons.length} lessons</span>
+            <span class="co__chaptercount" data-total={ch.lessons.length}>{ch.lessons.length} lessons</span>
           </div>
           <ul class="co__lessons">
             {ch.lessons.map((l) => (
               <li>
-                <a href={l.path} class="co__lesson">
+                <a href={l.path} class="co__lesson" data-key={`${ch.slug}/${l.slug}`}>
+                  <span class="co__lessontick" aria-hidden="true">○</span>
                   <span class="co__lessontitle">{l.title}</span>
                   <span class="co__lessonmeta mono">{l.minutes ? `${l.minutes} min` : ''}</span>
                 </a>
@@ -51,23 +59,69 @@ const first = course.chapters.flatMap((ch) => ch.lessons)[0];
       ))}
     </ol>
   </div>
+
+  <script is:inline>
+    (() => {
+      const root = document.querySelector('.co');
+      if (!root) return;
+      const course = root.dataset.course;
+      let data = {};
+      try { data = JSON.parse(localStorage.getItem('d2o-progress') || '{}'); } catch (e) {}
+      const cp = (data[course] || {});
+      const done = cp.completed || {};
+      const total = root.querySelectorAll('.co__lesson').length;
+      let doneCount = 0;
+
+      root.querySelectorAll('.co__lesson').forEach((a) => {
+        if (done[a.dataset.key]) { a.classList.add('is-done'); a.querySelector('.co__lessontick').textContent = '✓'; doneCount++; }
+      });
+      root.querySelectorAll('.co__chapter').forEach((ch) => {
+        const links = ch.querySelectorAll('.co__lesson');
+        const d = [...links].filter((a) => done[a.dataset.key]).length;
+        const el = ch.querySelector('.co__chaptercount');
+        if (d > 0) el.textContent = d === links.length ? '✓ done' : d + ' / ' + links.length;
+        if (d === links.length && links.length) el.classList.add('is-done');
+      });
+
+      if (doneCount > 0) {
+        const p = root.querySelector('.co__progress');
+        p.hidden = false;
+        p.querySelector('.co__progressbar span').style.width = (total ? (doneCount / total) * 100 : 0) + '%';
+        p.querySelector('.co__progresstext').textContent = doneCount + ' / ' + total + ' complete';
+      }
+      // Start -> Resume at the last opened lesson
+      if (cp.last) {
+        const btn = root.querySelector('.co__start');
+        btn.href = cp.last;
+        btn.textContent = (doneCount >= total && total ? 'Review the course →' : 'Resume →');
+      }
+    })();
+  </script>
 </Base>
 
 <style>
   .co { max-width: 760px; }
   .co__back { color: var(--ink-soft); text-decoration: none; font-size: 13px; }
-  .co__head { display: flex; gap: 18px; align-items: flex-start; margin: 20px 0 22px; }
+  .co__head { display: flex; gap: 18px; align-items: flex-start; margin: 20px 0 18px; }
   .co__icon { width: 60px; height: 60px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 30px; flex: none; }
   .co__title { font-size: 30px; margin: 0 0 6px; letter-spacing: -0.02em; }
   .co__tagline { color: var(--ink-soft); margin: 0 0 10px; }
   .co__meta { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--ink-faint); }
+  .co__progress { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; }
+  .co__progressbar { flex: 1; height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .co__progressbar span { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
+  .co__progresstext { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
   .co__start { margin-bottom: 26px; }
   .co__chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
   .co__chapterhead { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; }
   .co__chapternum { color: var(--accent); }
-  .co__chaptercount { margin-left: auto; color: var(--ink-faint); font-weight: 400; font-size: 12px; }
+  .co__chaptercount { margin-left: auto; color: var(--ink-faint); font-weight: 400; font-size: 12px; padding: 2px 9px; border-radius: 999px; }
+  .co__chaptercount.is-done { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
   .co__lessons { list-style: none; margin: 0; padding: 6px; }
-  .co__lesson { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; border-radius: 8px; text-decoration: none; color: var(--ink); }
+  .co__lesson { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; text-decoration: none; color: var(--ink); }
   .co__lesson:hover { background: var(--surface-2); }
+  .co__lessontick { color: var(--ink-faint); font-size: 12px; width: 14px; text-align: center; flex: none; }
+  .co__lesson.is-done .co__lessontick { color: var(--accent); }
+  .co__lessontitle { flex: 1; }
   .co__lessonmeta { color: var(--ink-faint); font-size: 12px; }
 </style>

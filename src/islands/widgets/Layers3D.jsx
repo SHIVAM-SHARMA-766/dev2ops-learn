@@ -2,7 +2,7 @@
 // one per step, with soft shadows, a translucent writable layer, gentle
 // auto-orbit and drag-to-rotate. Reuses the same YAML as `layerStack`
 // (layers: [{label}], writable: {label}). Client-only.
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
@@ -24,10 +24,12 @@ export default function Layers3D({ layers = [], writable, activeStep = 0 }) {
   const mountRef = useRef(null);
   const stepRef = useRef(activeStep);
   stepRef.current = activeStep;
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
+    setReady(false);
 
     const W0 = mount.clientWidth || 600;
     const H0 = mount.clientHeight || 360;
@@ -134,8 +136,10 @@ export default function Layers3D({ layers = [], writable, activeStep = 0 }) {
       });
       controls.update();
       renderer.render(scene, camera);
+      if (!firstFrame) { firstFrame = true; setReady(true); }
       raf = requestAnimationFrame(tick);
     };
+    let firstFrame = false;
     tick();
 
     const onResize = () => {
@@ -160,6 +164,9 @@ export default function Layers3D({ layers = [], writable, activeStep = 0 }) {
   const names = [...layers, ...(writable ? [{ ...writable, writable: true }] : [])];
   return (
     <div className="w-three">
+      {!ready && (
+        <div className="three-loading mono"><span className="three-dots"><i /><i /><i /></span>rendering 3D…</div>
+      )}
       <div className="three-canvas" ref={mountRef} />
       <div className="three-legend">
         {names.map((n, i) => {
