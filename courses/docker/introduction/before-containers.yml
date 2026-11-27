@@ -1,0 +1,74 @@
+title: The problem containers solve
+summary: Before any Docker — why shipping software used to hurt.
+minutes: 5
+difficulty: beginner
+order: 0
+
+scene:
+  widget: problemScene
+
+steps:
+  - kind: START HERE
+    title: You build something on your laptop
+    label: It works
+    body: >
+      You write a little app and run it on your laptop. It works. You install a
+      few tools, a database, the right version of a language — and everything's
+      happy. No Docker yet. Just your machine.
+
+  - kind: STORY
+    title: Then you share it
+    label: Send it
+    body: >
+      Now someone else needs to run it — a teammate, or a **server** on the
+      internet so real people can use it. So you copy the same code over.
+
+  - kind: PROBLEM
+    title: And it breaks
+    label: 💥 breaks
+    body: >
+      The exact same code **crashes** on the other machine. Nothing changed in
+      your code. This is the moment that has frustrated programmers for decades.
+    callout:
+      kind: YOU'VE HEARD IT
+      text: "“But it works on my machine!” — the most famous sentence in software."
+
+  - kind: CONCEPT
+    title: Why? The machine is different
+    label: Different
+    body: >
+      The other computer has a **different operating system**, is **missing
+      libraries** your app needs, or has the **wrong versions** installed. Your
+      code assumed an environment that isn't there.
+    callout:
+      kind: PLAIN ENGLISH
+      text: Software doesn't run on code alone — it needs a whole environment around it to work.
+
+  - kind: IDEA
+    title: So here's the idea
+    label: The idea
+    body: >
+      What if, instead of just the code, you could ship the app **together with
+      its entire environment** — the right OS bits, the libraries, the exact
+      versions — as one sealed package that runs the same everywhere?
+    callout:
+      kind: THAT'S DOCKER
+      text: That sealed package is a container. The next lessons show exactly how it works.
+
+quiz:
+  - question: Why does the same code sometimes break on a different machine?
+    options:
+      - The code changes when copied
+      - The other machine has a different OS, missing libraries or wrong versions
+      - Computers are random
+      - It needs the internet
+    answer: 1
+    explanation: Software depends on its surrounding environment; if that differs, the same code can fail.
+  - question: What's the core idea behind containers?
+    options:
+      - Write less code
+      - Ship the app together with its whole environment as one sealed package
+      - Use a faster computer
+      - Avoid servers
+    answer: 1
+    explanation: A container bundles the app and everything it needs, so it runs the same everywhere.

@@ -1,69 +1,63 @@
-// ShipScene — animates "build once, run anywhere". Code + runtime + libraries
-// combine into a sealed image, which then runs identically on several targets.
-// Driven purely by activeStep (0..4). No props needed.
+// ShipScene — "build once, run anywhere", illustrated. Code + deps seal into a
+// shipping container (the image), which then runs on a laptop, a server and the
+// cloud. Driven by activeStep (0..4).
 import React from 'react';
+import { Container, Laptop, Server, Cloud } from './illustrations.jsx';
 
-function Box({ x, y, label, tone, style }) {
+function InBox({ y, label, show }) {
   return (
-    <div className={`scene-box scene-box--${tone}`} style={{ left: `${x}%`, top: `${y}%`, ...style }}>
-      {label}
-    </div>
+    <g style={{ opacity: show ? 1 : 0.12, transition: 'opacity 0.4s' }}>
+      <rect x="18" y={y} width="86" height="26" rx="6" fill="var(--surface)" stroke="var(--accent)" strokeWidth="1.5" />
+      <text x="61" y={y + 17} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12" fill="var(--ink)">{label}</text>
+    </g>
   );
 }
 
 export default function ShipScene({ activeStep = 0 }) {
   const s = activeStep;
-  // inputs slide to the image centre (40%,50%) and fade once merged (s>=2)
-  const merged = s >= 2;
-  const inputStyle = (shown) => ({
-    opacity: merged ? 0 : shown ? 1 : 0.15,
-    transform: merged ? 'translate(-50%,-50%) translateX(90px) scale(0.5)' : 'translate(-50%,-50%)',
-  });
+  const sealed = s >= 2;
   const targets = [
-    { x: 86, y: 24, label: '💻 laptop' },
-    { x: 90, y: 50, label: '🖥️ server' },
-    { x: 86, y: 76, label: '⚙️ CI' },
+    { Comp: Laptop, x: 318, y: 8, label: 'laptop' },
+    { Comp: Server, x: 332, y: 78, label: 'server' },
+    { Comp: Cloud, x: 322, y: 150, label: 'cloud / CI' },
   ];
   return (
-    <div className="w-scene w-ship">
-      {/* inputs */}
-      <Box x={12} y={28} label="code" tone="code" style={inputStyle(s >= 0)} />
-      <Box x={12} y={50} label="runtime" tone="dep" style={inputStyle(s >= 1)} />
-      <Box x={12} y={72} label="libraries" tone="dep" style={inputStyle(s >= 1)} />
+    <div className="w-illus">
+      <svg viewBox="0 0 440 210" className="illus-svg">
+        {/* inputs (fade out once sealed) */}
+        <g style={{ opacity: sealed ? 0 : 1, transition: 'opacity 0.5s' }}>
+          <InBox y={40} label="code" show={s >= 0} />
+          <InBox y={92} label="+ runtime" show={s >= 1} />
+          <InBox y={144} label="+ libraries" show={s >= 1} />
+        </g>
 
-      {/* the image */}
-      <div
-        className={`scene-image ${s >= 2 ? 'is-sealed' : ''}`}
-        style={{
-          left: '40%', top: '50%',
-          opacity: s >= 2 ? 1 : 0.12,
-          transform: `translate(-50%,-50%) scale(${s >= 2 ? 1 : 0.8})`,
-        }}
-      >
-        <span className="scene-image__tag mono">IMAGE</span>
-        <span className="scene-image__sub mono">sealed · reproducible</span>
+        {/* the image = a shipping container */}
+        <g className={sealed ? 'illus-seal' : ''} style={{ opacity: sealed ? 1 : 0, transition: 'opacity 0.4s' }}>
+          <Container x={150} y={92} scale={1.05} />
+          <text x="218" y="150" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fill="var(--ink-faint)">image · sealed</text>
+        </g>
+
+        {/* targets */}
+        {targets.map((t, i) => (
+          <g key={i} style={{ opacity: s >= 3 ? 1 : 0.18, transition: `opacity 0.4s ${i * 100}ms` }}>
+            <t.Comp x={t.x} y={t.y} scale={0.62} state={s >= 4 ? 'ok' : 'idle'} />
+          </g>
+        ))}
+
+        {/* travelling container copies */}
+        {s >= 3 && targets.map((t, i) => (
+          <g key={`c${i}`} className="illus-fly" style={{ animationDelay: `${i * 140}ms` }}>
+            <rect x={t.x - 6} y={t.y + 20} width="18" height="14" rx="2" fill="var(--accent)" />
+          </g>
+        ))}
+      </svg>
+      <div className="illus-status">
+        {s === 0 && 'Start with your code.'}
+        {s === 1 && 'Add the runtime and libraries it needs.'}
+        {s === 2 && 'Seal it all into one image — like a shipping container.'}
+        {s === 3 && 'Ship that one image anywhere.'}
+        {s >= 4 && '✓ It runs identically on every machine.'}
       </div>
-
-      {/* targets */}
-      {targets.map((t, i) => (
-        <div
-          key={i}
-          className={`scene-target ${s >= 3 ? 'is-lit' : ''}`}
-          style={{ left: `${t.x}%`, top: `${t.y}%`, opacity: s >= 3 ? 1 : 0.2, transitionDelay: `${i * 120}ms` }}
-        >
-          <span className="scene-target__name">{t.label}</span>
-          <span className="scene-target__ok mono" style={{ opacity: s >= 4 ? 1 : 0 }}>✓ runs the same</span>
-        </div>
-      ))}
-
-      {/* travelling copies from image to targets (s>=3) */}
-      {s >= 3 && targets.map((t, i) => (
-        <span
-          key={`c${i}`}
-          className="scene-copy"
-          style={{ left: `${t.x - 4}%`, top: `${t.y}%`, transitionDelay: `${i * 120}ms` }}
-        />
-      ))}
     </div>
   );
 }

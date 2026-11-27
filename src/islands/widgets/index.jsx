@@ -15,6 +15,7 @@ import VmVsContainer from './VmVsContainer.jsx';
 import VolumeScene from './VolumeScene.jsx';
 import IsolationBox from './IsolationBox.jsx';
 import SizeScale from './SizeScale.jsx';
+import ProblemScene from './ProblemScene.jsx';
 
 const REGISTRY = {
   stagedReveal: StagedReveal,
@@ -30,6 +31,7 @@ const REGISTRY = {
   volumeScene: VolumeScene,
   isolationBox: IsolationBox,
   sizeScale: SizeScale,
+  problemScene: ProblemScene,
 };
 
 export function Scene({ scene, activeStep, steps }) {

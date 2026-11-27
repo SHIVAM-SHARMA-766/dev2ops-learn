@@ -8,16 +8,16 @@ scene:
   widget: shipScene
 
 steps:
-  - kind: PROBLEM
-    title: "“Works on my machine”"
-    label: Your code
+  - kind: RECAP
+    title: Start with your code
     body: >
-      You start with **your code**. It runs fine on your laptop. But the server
-      has a different OS, different library versions, a missing tool — and it
-      breaks. The code is the same; the *environment* is not.
+      Last lesson we saw the problem: code that works on your laptop breaks
+      elsewhere, because the **environment** differs. Docker's fix starts here,
+      with **your code** — the program you wrote.
+    label: Your code
     callout:
       kind: KEY IDEA
-      text: Most deployment pain is environment drift, not bugs in the code.
+      text: The code is rarely the problem. The environment around it is.
 
   - kind: CONCEPT
     title: Add the whole environment
