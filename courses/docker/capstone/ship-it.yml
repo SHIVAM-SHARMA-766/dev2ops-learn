@@ -1,0 +1,80 @@
+title: Ship it to a server
+summary: Tag, push, and deploy — reproducibly, with a rollback ready.
+minutes: 8
+difficulty: intermediate
+order: 3
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker build -t myorg/api:1.0.0 -t myorg/api:latest .
+      out: |
+        => naming to docker.io/myorg/api:1.0.0
+    - cmd: docker push myorg/api:1.0.0
+      out: |
+        1.0.0: digest: sha256:7b2e… pushed
+    - cmd: docker context create prod --docker "host=ssh://deploy@server"
+      out: |
+        Successfully created context "prod"
+    - cmd: docker --context prod compose -f compose.prod.yaml up -d
+      out: |
+        [+] Running 3/3  db ✓  api ✓  network ✓   (now live on the server)
+    - cmd: "# rollback if needed"
+      out: |
+        docker --context prod compose pull && docker ... up -d   # or re-deploy :0.9.0
+
+steps:
+  - kind: SHIP
+    title: Tag with a real version
+    label: Tag
+    body: >
+      Build with an **immutable version tag** `1.0.0` (plus `latest`). The version
+      tag is what makes this deploy reproducible and a rollback possible. (Lesson:
+      tags & digests.)
+
+  - kind: SHIP
+    title: Push to the registry
+    label: Push
+    body: >
+      `docker push` uploads the image so the server can pull the **exact** bytes
+      you just built and tested. (Lesson: registries.)
+
+  - kind: SHIP
+    title: Point at the server
+    label: Context
+    body: >
+      A `prod` **context** over SSH lets you run Docker commands against the
+      server from your laptop — no manual SSH, no copying files around. (Lesson:
+      contexts.)
+    callout:
+      kind: CAREFUL
+      text: Check `docker context ls` — the `*` shows where destructive commands will land.
+
+  - kind: SHIP
+    title: Deploy & keep a way back
+    label: Deploy
+    body: >
+      `--context prod compose up -d` starts the stack on the server using a
+      production compose file. If something's wrong, re-deploy the **previous**
+      tag from the registry — the old image is still there. You've shipped. 🎉
+    callout:
+      kind: DONE
+      text: Build → test → tag → push → deploy → (rollback ready). That's the whole loop, for real.
+
+quiz:
+  - question: Why tag the image `1.0.0` rather than only `latest` for the deploy?
+    options:
+      - It looks nicer
+      - An immutable version makes the deploy reproducible and rollback possible
+      - latest is faster
+      - It's required
+    answer: 1
+    explanation: A fixed version tag lets you redeploy or roll back to an exact, known image.
+  - question: How do you run the deploy on the remote server from your laptop?
+    options:
+      - Copy files over FTP
+      - Use a Docker context pointing at the server over SSH
+      - Rebuild on the server
+      - You can't
+    answer: 1
+    explanation: A context retargets the CLI at the remote daemon — deploy without leaving your machine.

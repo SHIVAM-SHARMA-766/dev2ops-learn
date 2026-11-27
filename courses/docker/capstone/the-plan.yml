@@ -1,0 +1,61 @@
+title: The capstone — a real app
+summary: We'll take a Node + Postgres app from source to a live server.
+minutes: 6
+difficulty: intermediate
+order: 1
+
+scene:
+  widget: flow
+  nodes:
+    - { id: code, label: source, sub: app + Dockerfile, x: 10, y: 50 }
+    - { id: build, label: build, sub: multi-stage, x: 32, y: 50 }
+    - { id: compose, label: compose, sub: app + db, x: 54, y: 50 }
+    - { id: push, label: push, sub: registry, x: 76, y: 50 }
+    - { id: deploy, label: deploy, sub: on the server, x: 94, y: 50 }
+  path: [code, build, compose, push, deploy]
+
+steps:
+  - kind: CONCEPT
+    title: What we're shipping
+    label: The app
+    body: >
+      A small **Node API** that talks to **Postgres**. Nothing fancy — the point
+      is the journey: everything you've learned, applied to one real app, end to
+      end.
+
+  - kind: CONCEPT
+    title: The path
+    label: The path
+    body: >
+      Source → a lean **multi-stage build** → a **Compose** stack to run app +
+      database together → **push** the image to a registry → **deploy** it on a
+      server. Five steps you now know individually.
+
+  - kind: CONCEPT
+    title: Everything connects
+    label: Connects
+    body: >
+      Watch how the pieces click: the Dockerfile's layer order keeps builds fast,
+      Compose wires the private network and a volume for the DB, the tag makes the
+      deploy reproducible, and a context lets us deploy without leaving the laptop.
+    callout:
+      kind: KEY IDEA
+      text: No new concepts here — just the real workflow that ties the whole course together.
+
+  - kind: CONCEPT
+    title: Let's go
+    label: Go
+    body: >
+      Next two lessons build it and ship it for real. Keep a terminal open and
+      follow along — by the end you'll have the exact muscle memory for your own
+      apps.
+
+quiz:
+  - question: What's the goal of this capstone?
+    options:
+      - Learn a new tool
+      - Apply the whole course to ship one real app end to end
+      - Only build an image
+      - Study Kubernetes
+    answer: 1
+    explanation: The capstone synthesises everything — build, compose, push, deploy — on a single real app.

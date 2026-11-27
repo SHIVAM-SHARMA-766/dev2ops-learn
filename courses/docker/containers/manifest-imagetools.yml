@@ -1,0 +1,71 @@
+title: Inspect & assemble manifests
+summary: See inside a tag with imagetools — and build multi-arch lists by hand.
+minutes: 6
+difficulty: advanced
+order: 7
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker buildx imagetools inspect node:20
+      out: |
+        Name: docker.io/library/node:20
+        MediaType: application/vnd.oci.image.index.v1+json
+        Manifests:
+          - linux/amd64   sha256:aaa…
+          - linux/arm64   sha256:bbb…
+          - linux/arm/v7  sha256:ccc…
+    - cmd: docker buildx imagetools inspect node:20 --format '{{json .Manifest}}'
+      out: |
+        { "mediaType": "...index...", "manifests": [ ... ] }
+    - cmd: docker buildx imagetools create -t myorg/app:1.0 myorg/app:amd64 myorg/app:arm64
+      out: |
+        (combine two single-arch images into one multi-arch tag — no rebuild)
+
+steps:
+  - kind: CONCEPT
+    title: A tag can hide a whole list
+    label: Index
+    body: >
+      Pull `node:20` on an Intel laptop and an ARM server and you get different
+      bytes — because the tag is a **manifest list** (an OCI index) pointing at a
+      per-architecture image. `imagetools inspect` shows the list.
+
+  - kind: TOOL
+    title: Inspect without pulling
+    label: inspect
+    body: >
+      `docker buildx imagetools inspect <image>` reads the manifest **from the
+      registry** — architectures, digests, media types — without downloading the
+      image. Great for "what platforms does this tag support?".
+    callout:
+      kind: TIE-IN
+      text: This is the manifest list from the multi-platform lesson, viewed from the outside.
+
+  - kind: TOOL
+    title: Read any field
+    label: --format
+    body: >
+      Add `--format '{{json .Manifest}}'` (or `.Provenance`, `.SBOM`) to pull out
+      exactly the part you want as JSON — handy in scripts and CI checks.
+
+  - kind: TOOL
+    title: Assemble a list yourself
+    label: create
+    body: >
+      Built two single-arch images separately? `imagetools create -t tag img1
+      img2` stitches them into **one** multi-arch tag — server-side, no rebuild,
+      no re-push of the layers.
+    callout:
+      kind: HANDY
+      text: Build per-arch on native runners, then imagetools create to publish one unified tag.
+
+quiz:
+  - question: What does `docker buildx imagetools inspect` let you do?
+    options:
+      - Run a container
+      - See a tag's architectures and digests from the registry, without pulling
+      - Delete an image
+      - Build an image
+    answer: 1
+    explanation: It reads the manifest (list) straight from the registry — platforms, digests, attestations.

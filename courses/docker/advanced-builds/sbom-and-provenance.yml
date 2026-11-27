@@ -1,0 +1,74 @@
+title: SBOMs & build provenance
+summary: Know exactly what's in an image and how it was built.
+minutes: 7
+difficulty: advanced
+order: 6
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker buildx build --sbom=true --provenance=true -t myorg/app:1.0 --push .
+      out: |
+        => exporting sbom
+        => exporting provenance attestation
+        => pushing manifest  (image + attestations)
+    - cmd: docker scout sbom myorg/app:1.0 | head -4
+      out: |
+        openssl       3.0.13
+        libc6         2.36
+        express       4.19.2
+        (a full bill of materials — every package & version)
+    - cmd: docker buildx imagetools inspect myorg/app:1.0 --format '{{json .Provenance}}'
+      out: |
+        { "buildType": "...", "materials": [...], "invocation": {...} }
+    - cmd: docker scout cves myorg/app:1.0
+      out: |
+        ✓ 0 critical, 1 high → CVE in a transitive dep, fix available
+
+steps:
+  - kind: CONCEPT
+    title: What's actually in there?
+    label: SBOM
+    body: >
+      An image bundles dozens of OS and language packages. A **Software Bill of
+      Materials (SBOM)** lists every one with its version — so when the next big
+      CVE drops, you can answer "are we affected?" in seconds.
+
+  - kind: CONCEPT
+    title: Generate it at build time
+    label: --sbom
+    body: >
+      `docker buildx build --sbom=true` attaches an SBOM to the image as it's
+      built and pushes it alongside. No separate scan step — it travels with the
+      image.
+    callout:
+      kind: KEY IDEA
+      text: An SBOM turns "we think it's fine" into "here's exactly what's inside, checkable by anyone".
+
+  - kind: CONCEPT
+    title: Provenance — how it was built
+    label: Provenance
+    body: >
+      `--provenance=true` records a signed **attestation** of how the image was
+      produced — the source, the builder, the inputs. Supply-chain tooling (SLSA)
+      uses it to verify an image came from your real pipeline.
+
+  - kind: CONCEPT
+    title: Scan continuously
+    label: Scan
+    body: >
+      With an SBOM, tools like `docker scout` (or Trivy/Grype) map your packages to
+      known CVEs — in CI and continuously after release. Fix, rebuild, re-push.
+    callout:
+      kind: SUPPLY CHAIN
+      text: SBOM (what's inside) + provenance (how it was built) + signing (who built it) = a trustworthy image.
+
+quiz:
+  - question: What question does an SBOM let you answer instantly?
+    options:
+      - How big is the image
+      - Which packages and versions are inside (so, am I affected by CVE X?)
+      - Who owns the registry
+      - How fast it builds
+    answer: 1
+    explanation: An SBOM is a full package inventory — essential for responding to new vulnerabilities.

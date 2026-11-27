@@ -1,0 +1,100 @@
+title: Build it & run it
+summary: A multi-stage Dockerfile and a Compose stack, step by step.
+minutes: 9
+difficulty: intermediate
+order: 2
+
+scene:
+  widget: codeWalk
+  filename: Dockerfile + compose.yaml
+  lines:
+    - "# ---------- Dockerfile ----------"
+    - "FROM node:20-slim AS build"
+    - "WORKDIR /app"
+    - "COPY package*.json ./"
+    - "RUN npm ci"
+    - "COPY . ."
+    - "RUN npm run build"
+    - ""
+    - "FROM node:20-slim"
+    - "WORKDIR /app"
+    - "RUN useradd -r app && mkdir -p /app && chown app /app"
+    - "COPY --from=build --chown=app /app/dist ./dist"
+    - "COPY --from=build --chown=app /app/node_modules ./node_modules"
+    - "USER app"
+    - "HEALTHCHECK CMD wget -qO- localhost:3000/health || exit 1"
+    - "CMD [\"node\", \"dist/server.js\"]"
+    - ""
+    - "# ---------- compose.yaml ----------"
+    - "services:"
+    - "  api:"
+    - "    build: ."
+    - "    ports: [\"3000:3000\"]"
+    - "    environment: { DATABASE_URL: postgres://app:secret@db:5432/app }"
+    - "    depends_on: { db: { condition: service_healthy } }"
+    - "  db:"
+    - "    image: postgres:16"
+    - "    environment: { POSTGRES_USER: app, POSTGRES_PASSWORD: secret, POSTGRES_DB: app }"
+    - "    healthcheck: { test: [\"CMD\",\"pg_isready\",\"-U\",\"app\"], interval: 5s }"
+    - "    volumes: [\"dbdata:/var/lib/postgresql/data\"]"
+    - "volumes: { dbdata: {} }"
+  highlights:
+    - [1, 2, 3, 4, 5, 6]
+    - [8, 11, 12, 13]
+    - [18, 19, 20, 21, 22, 23]
+    - [24, 25, 26, 27, 28, 29]
+
+steps:
+  - kind: BUILD
+    title: Stage one — build
+    label: Build stage
+    body: >
+      The build stage installs **all** deps and compiles the app to `/app/dist`.
+      Lockfiles copied first so `npm ci` stays cached (lesson: build cache).
+
+  - kind: BUILD
+    title: Stage two — lean & non-root
+    label: Runtime stage
+    body: >
+      A fresh base copies in **only** `dist` and `node_modules`, owned by a
+      non-root `app` user, with a `HEALTHCHECK`. Small, hardened, honest about
+      being alive. (Lessons: multi-stage, non-root, healthcheck.)
+    callout:
+      kind: PAYOFF
+      text: The toolchain and dev deps never ship — a tiny, safer runtime image.
+
+  - kind: RUN
+    title: Compose the stack
+    label: api + db
+    body: >
+      `api` builds from this Dockerfile and reaches `db` by name over Compose's
+      private network. `depends_on … service_healthy` waits until Postgres really
+      accepts connections. (Lessons: networking, healthchecks.)
+
+  - kind: RUN
+    title: Persist the data
+    label: Volume
+    body: >
+      The `db` keeps its data in a named volume `dbdata`, so `docker compose down`
+      and back up doesn't lose anything. (Lesson: volumes.)
+    callout:
+      kind: DO IT
+      text: "`docker compose up --build` — the whole app, one command. Visit localhost:3000."
+
+quiz:
+  - question: Why does the runtime stage copy only dist and node_modules?
+    options:
+      - To confuse readers
+      - To leave the build toolchain out, keeping the image small and safer
+      - npm requires it
+      - To expose a port
+    answer: 1
+    explanation: Multi-stage lets you ship just the artifacts, not the heavy build tools.
+  - question: What makes `api` wait for a truly-ready database?
+    options:
+      - depends_on alone
+      - depends_on with condition service_healthy + a db healthcheck
+      - A sleep
+      - Nothing
+    answer: 1
+    explanation: The healthcheck plus service_healthy gates startup on readiness, not just "started".

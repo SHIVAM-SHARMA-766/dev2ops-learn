@@ -22,6 +22,7 @@
     { "slug": "production", "title": "Going to production" },
     { "slug": "beyond", "title": "Beyond one host" },
     { "slug": "operating", "title": "Operating & debugging" },
+    { "slug": "capstone", "title": "Capstone: ship an app" },
     { "slug": "reference", "title": "Reference" }
   ]
 }
