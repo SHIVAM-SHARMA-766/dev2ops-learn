@@ -252,6 +252,10 @@ h1, h2, h3, .mono { font-family: var(--font-mono); }
 
 /* gamification: your-progress card */
 .stats { padding: 18px 20px; margin: 0 0 18px; }
+.stats__complete {
+  margin: -2px 0 14px; padding: 10px 14px; border-radius: 10px; text-align: center;
+  background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 13.5px;
+}
 .stats__row { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
 .stats__level { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px; }
 .stats__levelnum { font-size: 13px; font-weight: 700; color: var(--accent); white-space: nowrap; }

@@ -1,0 +1,77 @@
+title: GPUs & devices
+summary: Give a container a graphics card or a USB device.
+minutes: 6
+difficulty: advanced
+order: 6
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker run --gpus all nvidia/cuda:12.3-base nvidia-smi
+      out: |
+        +-----------------------------------------+
+        | NVIDIA-SMI   Driver: 550.x   CUDA: 12.3 |
+        | GPU 0  NVIDIA A100           40GB        |
+        +-----------------------------------------+
+    - cmd: docker run --gpus '"device=0,1"' myapp
+      out: |
+        (expose only GPUs 0 and 1 to this container)
+    - cmd: docker run --device /dev/ttyUSB0 myserialapp
+      out: |
+        (pass a specific host device through to the container)
+    - cmd: "# compose.yaml"
+      out: |
+        services:
+          trainer:
+            deploy:
+              resources:
+                reservations:
+                  devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+
+steps:
+  - kind: CONCEPT
+    title: Containers can use hardware
+    label: Hardware
+    body: >
+      By default a container sees no GPU and only a minimal set of devices. For ML
+      training, media work or hardware access, you grant it explicitly.
+
+  - kind: CONCEPT
+    title: --gpus for the GPU
+    label: --gpus
+    body: >
+      With the NVIDIA Container Toolkit installed, `--gpus all` exposes every GPU;
+      `--gpus '"device=0,1"'` picks specific ones. `nvidia-smi` inside the
+      container confirms it sees them.
+    callout:
+      kind: SETUP
+      text: The host needs NVIDIA drivers + the NVIDIA Container Toolkit; the image brings CUDA.
+
+  - kind: CONCEPT
+    title: --device for anything else
+    label: --device
+    body: >
+      `--device /dev/ttyUSB0` passes a specific host device (a serial port, a
+      camera) into the container — far safer than `--privileged`, which would hand
+      over everything.
+    callout:
+      kind: AVOID
+      text: Don't reach for --privileged just to get one device. Pass that one device with --device.
+
+  - kind: CONCEPT
+    title: Declare it in Compose
+    label: Compose
+    body: >
+      Compose exposes the same via `deploy.resources.reservations.devices`, so a
+      GPU training service requests its hardware declaratively, the same way
+      everywhere.
+
+quiz:
+  - question: You need one serial device in a container. Best approach?
+    options:
+      - --privileged
+      - --device /dev/ttyUSB0
+      - A volume
+      - --gpus all
+    answer: 1
+    explanation: "--device passes exactly that one device; --privileged would over-grant far more than needed."

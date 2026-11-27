@@ -1,0 +1,78 @@
+title: Docker inside Docker (and CI)
+summary: How a CI job builds images — DinD vs mounting the socket.
+minutes: 8
+difficulty: advanced
+order: 5
+
+scene:
+  widget: compare
+  left:
+    title: Socket mount
+    items:
+      - "-v /var/run/docker.sock:/var/run/docker.sock"
+      - Uses the HOST's daemon
+      - Fast, shares the image cache
+      - ⚠ container gets host-root power
+      - Common in CI runners
+  right:
+    title: Docker-in-Docker (dind)
+    items:
+      - "docker:dind as a separate daemon"
+      - Fully isolated from the host
+      - Needs --privileged (its own risk)
+      - Cold cache each run (unless volumed)
+      - Cleaner isolation, more setup
+  highlight:
+    - [0, 1]
+    - [2, 3]
+    - [0, 1]
+    - [1, 2]
+
+steps:
+  - kind: PROBLEM
+    title: CI needs to build images
+    label: The need
+    body: >
+      Your pipeline runs **inside** a container, but it has to run `docker build`
+      and `docker push`. How does a container use Docker? Two patterns, two
+      trade-offs.
+
+  - kind: CONCEPT
+    title: Mount the host's socket
+    label: Socket mount
+    body: >
+      Mount `/var/run/docker.sock` into the job. Now `docker` commands talk to the
+      **host's** daemon — fast, and it shares the host's image cache. Simple and
+      common.
+    callout:
+      kind: CAUTION
+      text: The Docker socket is root-equivalent. A job with it can control the host. Trust your CI jobs.
+
+  - kind: CONCEPT
+    title: Or run a nested daemon (dind)
+    label: dind
+    body: >
+      `docker:dind` runs a **separate** Docker daemon inside the job — fully
+      isolated from the host, but it needs `--privileged` and starts with a cold
+      cache. Better isolation, more moving parts.
+
+  - kind: CONCEPT
+    title: Or skip the daemon entirely
+    label: Rootless build
+    body: >
+      Increasingly, CI builds images **without** a Docker daemon at all —
+      BuildKit's rootless builder, or tools like Buildah/Kaniko. No socket, no
+      privileged, just a build. Often the safest modern choice.
+    callout:
+      kind: RULE OF THUMB
+      text: Prefer a daemonless/rootless builder in CI; use the socket only on runners you fully trust.
+
+quiz:
+  - question: What's the main risk of mounting the Docker socket into a CI job?
+    options:
+      - It's slow
+      - The socket is root-equivalent, so the job can control the host
+      - It uses more memory
+      - It can't push images
+    answer: 1
+    explanation: Access to the Docker socket effectively grants root on the host — mind which jobs get it.

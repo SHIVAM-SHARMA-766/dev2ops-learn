@@ -1,0 +1,80 @@
+title: Reuse config with extends & anchors
+summary: Stop repeating yourself across services and files.
+minutes: 7
+difficulty: advanced
+order: 5
+
+scene:
+  widget: codeWalk
+  filename: compose.yaml
+  lines:
+    - "# YAML anchors: define once, reuse"
+    - "x-common: &common"
+    - "  restart: unless-stopped"
+    - "  env_file: [.env]"
+    - ""
+    - "services:"
+    - "  web:"
+    - "    <<: *common          # merge the anchor in"
+    - "    build: ."
+    - "  worker:"
+    - "    <<: *common"
+    - "    command: node worker.js"
+    - ""
+    - "  # extends pulls config from another service/file"
+    - "  api:"
+    - "    extends: { file: base.yaml, service: node-base }"
+  highlights:
+    - [1, 2, 3]
+    - [6, 7, 8]
+    - [9, 10, 11]
+    - [13, 14, 15]
+
+steps:
+  - kind: PROBLEM
+    title: The same lines, everywhere
+    label: Repetition
+    body: >
+      Three services all set `restart`, the same `env_file`, the same logging.
+      Copy-paste drifts — you fix one and forget the others. Compose has two ways
+      to share.
+
+  - kind: CONCEPT
+    title: YAML anchors
+    label: Anchors
+    body: >
+      Define a block once with an **anchor** (`&common`) and merge it into
+      services with `<<: *common`. Pure YAML — the shared settings live in one
+      place.
+    callout:
+      kind: NOTE
+      text: "`x-` keys (like `x-common`) are ignored by Compose, perfect for holding anchors."
+
+  - kind: CONCEPT
+    title: Merge and override
+    label: Merge
+    body: >
+      A service can merge the anchor **and** add its own keys — `web` gets the
+      common bits plus its `build`. Local keys win over merged ones, so you
+      override just what differs.
+
+  - kind: CONCEPT
+    title: extends across files
+    label: extends
+    body: >
+      `extends` pulls a service's config from **another file**, so a shared
+      `base.yaml` can define a `node-base` that many projects build on. Reuse
+      across repos, not just within one file.
+    callout:
+      kind: RULE OF THUMB
+      text: Anchors for reuse within a file; extends for reuse across files. Keep common config DRY.
+
+quiz:
+  - question: "What does `<<: *common` do in a Compose service?"
+    options:
+      - Comments it out
+      - Merges the anchored block's keys into this service
+      - Deletes keys
+      - Runs a command
+    answer: 1
+    explanation: It's a YAML merge of the `&common` anchor — shared settings defined once, reused.

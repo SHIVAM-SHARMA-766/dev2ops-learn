@@ -1,0 +1,78 @@
+title: Advanced networking
+summary: macvlan, internal networks, static IPs and DNS options.
+minutes: 7
+difficulty: advanced
+order: 4
+
+scene:
+  widget: terminalReplay
+  blocks:
+    - cmd: docker network create -d macvlan --subnet 192.168.1.0/24 --gateway 192.168.1.1 -o parent=eth0 lan
+      out: |
+        (containers get real IPs on your physical LAN, like separate machines)
+    - cmd: docker network create --internal backend
+      out: |
+        (an internal network with NO route to the outside world)
+    - cmd: docker run --network app-net --ip 172.20.0.10 db
+      out: |
+        (pin a static IP within a user-defined network)
+    - cmd: docker run --dns 1.1.1.1 --add-host api.local:10.0.0.5 myapp
+      out: |
+        (custom DNS server + a static /etc/hosts entry)
+
+steps:
+  - kind: CONCEPT
+    title: macvlan — real LAN presence
+    label: macvlan
+    body: >
+      The **macvlan** driver gives each container its own MAC and a real IP on
+      your physical network — the LAN sees it as a separate device. Useful for
+      legacy apps that expect to be "a machine on the network".
+    callout:
+      kind: NOTE
+      text: Powerful but fiddly — it bypasses the host's bridge/NAT, so plan IPs and VLANs carefully.
+
+  - kind: CONCEPT
+    title: internal — no way out
+    label: internal
+    body: >
+      `--internal` makes a network with **no external route**. Put your database
+      on it so it can talk to the app but can't reach — or be reached from — the
+      internet. Simple, strong segmentation.
+    callout:
+      kind: KEY IDEA
+      text: Front-facing services on a normal network; data tier on an internal one. Defence in depth.
+
+  - kind: CONCEPT
+    title: Static IPs when you must
+    label: Static IP
+    body: >
+      Usually you rely on name-based DNS, but you can pin a container's IP with
+      `--ip` on a user-defined network — for appliances or configs that need a
+      fixed address.
+
+  - kind: CONCEPT
+    title: DNS & host overrides
+    label: DNS
+    body: >
+      `--dns` sets the resolver a container uses; `--add-host name:ip` injects a
+      static `/etc/hosts` entry. Handy for pointing at a specific upstream or
+      faking a hostname in tests.
+
+quiz:
+  - question: You want a database network with no internet access at all. What do you use?
+    options:
+      - macvlan
+      - "docker network create --internal"
+      - --dns
+      - host networking
+    answer: 1
+    explanation: An --internal network has no external route, isolating the data tier from the outside.
+  - question: What does the macvlan driver give a container?
+    options:
+      - A faster CPU
+      - Its own MAC and a real IP on the physical LAN
+      - More memory
+      - A volume
+    answer: 1
+    explanation: macvlan places the container directly on the physical network as its own device.

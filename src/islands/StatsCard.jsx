@@ -10,9 +10,13 @@ export default function StatsCard({ total = 0 }) {
 
   const unlocked = stats.achievements.filter((a) => a.unlocked);
   const next = stats.achievements.find((a) => !a.unlocked);
+  const complete = stats.total > 0 && stats.count >= stats.total;
 
   return (
     <section className="stats card" aria-label="Your progress">
+      {complete && (
+        <div className="stats__complete mono">🏆 You finished every lesson — Docker, done. Legend.</div>
+      )}
       <div className="stats__row">
         <div className="stats__level">
           <span className="stats__levelnum mono">LVL {stats.level}</span>
