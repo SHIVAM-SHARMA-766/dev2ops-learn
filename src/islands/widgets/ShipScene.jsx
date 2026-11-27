@@ -2,7 +2,7 @@
 // shipping container (the image), which then runs on a laptop, a server and the
 // cloud. Driven by activeStep (0..4).
 import React from 'react';
-import { Container, Laptop, Server, Cloud, ArtDefs } from './illustrations.jsx';
+import { Container, Laptop, Server, Cloud, ArtDefs, Logo } from './illustrations.jsx';
 
 function InBox({ y, label, show }) {
   return (
@@ -35,7 +35,10 @@ export default function ShipScene({ activeStep = 0 }) {
         {/* the image = a shipping container */}
         <g className={sealed ? 'illus-seal' : ''} style={{ opacity: sealed ? 1 : 0, transition: 'opacity 0.4s' }}>
           <Container x={150} y={92} scale={1.05} />
-          <text x="218" y="150" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fill="var(--ink-faint)">image · sealed</text>
+          {/* Docker whale badge — this is a Docker image */}
+          <circle cx="209" cy="121" r="19" fill="#fff" opacity="0.95" />
+          <Logo name="docker" x="193" y="105" size="32" />
+          <text x="218" y="158" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fill="var(--ink-faint)">a Docker image</text>
         </g>
 
         {/* targets */}

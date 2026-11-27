@@ -1,71 +1,60 @@
 title: Docker isn't the only way
-summary: OCI standards, containerd, and why your images run anywhere.
+summary: The same image runs under many tools — thanks to open standards.
 minutes: 7
 difficulty: advanced
 order: 5
 
 scene:
-  widget: compare
-  left:
-    title: The standards (OCI)
-    items:
-      - OCI Image Spec — the image format
-      - OCI Runtime Spec — how to run it
-      - OCI Distribution — the registry API
-      - Vendor-neutral, since 2015
-      - Your image is an OCI artefact
-  right:
-    title: The implementations
-    items:
-      - "Docker — the familiar toolset"
-      - "containerd — the runtime (also under k8s)"
-      - "runc — the low-level OCI runtime"
-      - "nerdctl / podman / buildah — alternatives"
-      - All speak the same specs
-  highlight:
-    - [0, 4]
-    - [0, 1]
-    - [1, 2]
-    - [3, 4]
+  widget: iconReveal
+  caption: Different tools, the same OCI images and registries.
+  items:
+    - { logo: docker, label: Docker, note: the familiar toolset }
+    - { icon: box, label: containerd, note: the runtime }
+    - { icon: cpu, label: runc, note: talks to the kernel }
+    - { logo: kubernetes, label: Kubernetes, note: drives the same runtime }
+    - { icon: terminal-2, label: Podman / nerdctl, note: same images, no daemon }
 
 steps:
   - kind: CONCEPT
-    title: Standards, not just a product
-    label: OCI
+    title: Docker is a product — the format is a standard
+    label: Docker
     body: >
-      "Docker" is a company and a toolset — but the **formats** are open standards
+      "Docker" is a company and a toolset. But the **formats** are open standards
       from the **Open Container Initiative (OCI)**: how an image is laid out, how
       it's run, and how registries serve it.
 
   - kind: CONCEPT
-    title: That's why images are portable
-    label: Portable
-    body: >
-      Because your image follows the OCI **Image Spec**, it runs under Docker,
-      Kubernetes, Podman — anything OCI-compliant. The image you built in lesson
-      one is a vendor-neutral artefact.
-    callout:
-      kind: KEY IDEA
-      text: You build to a standard, not to Docker. That's what makes "runs anywhere" true.
-
-  - kind: CONCEPT
-    title: containerd & runc do the work
+    title: containerd does the real work
     label: containerd
     body: >
-      You already met **containerd** and **runc** under the hood. containerd is a
-      full runtime you can use directly — it's also what **Kubernetes** uses to run
-      pods. Docker is a friendly layer on top.
+      Under Docker sits **containerd** — a full container runtime that supervises
+      the lifecycle. It's a standard component you can use directly, not just via
+      Docker.
 
   - kind: CONCEPT
-    title: Other tools, same specs
+    title: runc talks to the kernel
+    label: runc
+    body: >
+      containerd calls **runc**, a tiny OCI runtime that creates the isolated
+      process with namespaces and cgroups. The low-level piece we met earlier.
+
+  - kind: CONCEPT
+    title: Kubernetes uses the same stack
+    label: Kubernetes
+    body: >
+      **Kubernetes** doesn't need Docker — it drives **containerd** directly to
+      run pods. Your Docker-built image runs there unchanged.
+    callout:
+      kind: KEY IDEA
+      text: You build to the OCI standard, not to Docker. That's what makes "runs anywhere" true.
+
+  - kind: CONCEPT
+    title: Other tools, same images
     label: Alternatives
     body: >
-      `nerdctl` is a Docker-compatible CLI for containerd; **Podman** and
-      **Buildah** build and run OCI images without a daemon. Different tools, same
-      images and registries — switch freely.
-    callout:
-      kind: TAKEAWAY
-      text: Learn the concepts and the OCI model, and every container tool feels familiar.
+      **Podman**, **Buildah** and **nerdctl** build and run the very same OCI
+      images and registries — some without a daemon at all. Learn the model, and
+      every container tool feels familiar.
 
 quiz:
   - question: Why can a Docker-built image run on Kubernetes or Podman?

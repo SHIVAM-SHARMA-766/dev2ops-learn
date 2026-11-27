@@ -1,62 +1,50 @@
-// Vendor open-licensed brand logos + icons into public/art/.
-// Run with network access:  node scripts/fetch-art.mjs
+// Vendor open-licensed brand logos + icons into public/art/ by copying from npm
+// packages (reliable — uses the npm registry, no raw GitHub / CDN).
+//
+//   npm install -D devicon @tabler/icons   # once
+//   node scripts/fetch-art.mjs             # copy the curated set into public/art/
 //
 // Sources: Devicon (MIT) for tech logos, Tabler Icons (MIT) for UI objects.
-// Files are saved locally and served via <img>, so no CDN at runtime.
-// See public/art/LICENSES.md.
-import { writeFileSync, mkdirSync } from 'node:fs';
+// Files are served via <img>, so no CDN at runtime. See public/art/LICENSES.md.
+import { copyFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'art');
-mkdirSync(join(ROOT, 'logos'), { recursive: true });
-mkdirSync(join(ROOT, 'icons'), { recursive: true });
+const APP = join(dirname(fileURLToPath(import.meta.url)), '..');
+const ART = join(APP, 'public', 'art');
+mkdirSync(join(ART, 'logos'), { recursive: true });
+mkdirSync(join(ART, 'icons'), { recursive: true });
 
-const DEV = (t, v) => `https://raw.githubusercontent.com/devicons/devicon/master/icons/${t}/${t}-${v}.svg`;
-
-// [outfile, tech, preferred variant]
+// [outfile, devicon tech folder, file stem]
 const logos = [
-  ['docker', 'docker', 'original'], ['nodejs', 'nodejs', 'original'],
-  ['postgresql', 'postgresql', 'original'], ['redis', 'redis', 'original'],
-  ['nginx', 'nginx', 'original'], ['linux', 'linux', 'original'],
-  ['git', 'git', 'original'], ['python', 'python', 'original'],
-  ['go', 'go', 'original'], ['kubernetes', 'kubernetes', 'plain'],
-  ['mysql', 'mysql', 'original'], ['mongodb', 'mongodb', 'original'],
-  ['grafana', 'grafana', 'original'], ['prometheus', 'prometheus', 'original'],
-  ['ubuntu', 'ubuntu', 'plain'], ['debian', 'debian', 'original'],
+  ['docker', 'docker', 'docker-original'], ['nodejs', 'nodejs', 'nodejs-original'],
+  ['postgresql', 'postgresql', 'postgresql-original'], ['redis', 'redis', 'redis-original'],
+  ['nginx', 'nginx', 'nginx-original'], ['linux', 'linux', 'linux-original'],
+  ['git', 'git', 'git-original'], ['python', 'python', 'python-original'],
+  ['go', 'go', 'go-original'], ['kubernetes', 'kubernetes', 'kubernetes-plain'],
+  ['mysql', 'mysql', 'mysql-original'], ['mongodb', 'mongodb', 'mongodb-original'],
+  ['grafana', 'grafana', 'grafana-original'], ['prometheus', 'prometheus', 'prometheus-original'],
+  ['ubuntu', 'ubuntu', 'ubuntu-plain'], ['debian', 'debian', 'debian-original'],
 ];
-
 const icons = [
   'server', 'device-laptop', 'database', 'cloud', 'box', 'package', 'terminal-2',
   'network', 'lock', 'settings', 'arrow-right', 'world', 'cpu', 'stack-2',
   'shield-lock', 'refresh', 'rocket', 'bug', 'plug-connected', 'versions',
 ];
 
-async function get(urls) {
-  for (const url of urls) {
-    try {
-      const r = await fetch(url);
-      if (r.ok) {
-        const t = await r.text();
-        if (t.includes('<svg') && t.length < 300000) return t;
-      }
-    } catch { /* try next */ }
-  }
-  return null;
-}
-
+const valid = (p) => existsSync(p) && readFileSync(p, 'utf8').includes('<svg');
 let ok = 0;
 const fail = [];
-for (const [name, tech, v] of logos) {
-  const svg = await get([DEV(tech, v), DEV(tech, 'original'), DEV(tech, 'plain')]);
-  if (svg) { writeFileSync(join(ROOT, 'logos', `${name}.svg`), svg); ok++; } else fail.push(`logo:${name}`);
+
+for (const [name, folder, stem] of logos) {
+  const src = join(APP, 'node_modules', 'devicon', 'icons', folder, `${stem}.svg`);
+  if (valid(src)) { copyFileSync(src, join(ART, 'logos', `${name}.svg`)); ok++; } else fail.push(`logo:${name}`);
 }
 for (const n of icons) {
-  const svg = await get([
-    `https://raw.githubusercontent.com/tabler/tabler-icons/main/icons/outline/${n}.svg`,
-    `https://raw.githubusercontent.com/tabler/tabler-icons/main/icons/${n}.svg`,
-  ]);
-  if (svg) { writeFileSync(join(ROOT, 'icons', `${n}.svg`), svg); ok++; } else fail.push(`icon:${n}`);
+  let src = join(APP, 'node_modules', '@tabler', 'icons', 'icons', `${n}.svg`);
+  if (!existsSync(src)) src = join(APP, 'node_modules', '@tabler', 'icons', 'icons', 'outline', `${n}.svg`);
+  if (valid(src)) { copyFileSync(src, join(ART, 'icons', `${n}.svg`)); ok++; } else fail.push(`icon:${n}`);
 }
-console.log(`Saved ${ok} assets to public/art/`);
-if (fail.length) console.log('Could not fetch:', fail.join(', '));
+
+console.log(`Vendored ${ok} assets into public/art/`);
+if (fail.length) console.log('Missing (install devicon / @tabler/icons first):', fail.join(', '));

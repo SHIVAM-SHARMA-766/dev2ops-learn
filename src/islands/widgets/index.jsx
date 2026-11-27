@@ -16,6 +16,7 @@ import VolumeScene from './VolumeScene.jsx';
 import IsolationBox from './IsolationBox.jsx';
 import SizeScale from './SizeScale.jsx';
 import ProblemScene from './ProblemScene.jsx';
+import IconReveal from './IconReveal.jsx';
 
 const REGISTRY = {
   stagedReveal: StagedReveal,
@@ -32,6 +33,7 @@ const REGISTRY = {
   isolationBox: IsolationBox,
   sizeScale: SizeScale,
   problemScene: ProblemScene,
+  iconReveal: IconReveal,
 };
 
 export function Scene({ scene, activeStep, steps }) {
