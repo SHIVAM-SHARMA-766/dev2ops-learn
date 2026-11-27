@@ -24,6 +24,15 @@ const fullTitle = title ? `${title} · ${siteConfig.title}` : siteConfig.title;
     <meta name="description" content={description} />
     <title>{fullTitle}</title>
     <link rel="icon" href="/favicon.svg" />
+    <link rel="canonical" href={new URL(Astro.url.pathname, siteConfig.url).href} />
+    <meta name="theme-color" content="#f4ebe0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1713" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteConfig.title} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={new URL(Astro.url.pathname, siteConfig.url).href} />
+    <meta name="twitter:card" content="summary" />
     <script is:inline>
       // Apply the saved theme before paint to avoid a flash.
       try {

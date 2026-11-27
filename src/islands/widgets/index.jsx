@@ -18,7 +18,25 @@ import SizeScale from './SizeScale.jsx';
 import ProblemScene from './ProblemScene.jsx';
 import IconReveal from './IconReveal.jsx';
 import PacketJourney from './PacketJourney.jsx';
-import Layers3D from './Layers3D.jsx';
+
+// 3D pulls in three.js (~600KB); load it only when a 3D scene is actually shown,
+// as its own chunk, so the other 72 lessons never download it. Client-only.
+function Lazy3D(props) {
+  const [Comp, setComp] = React.useState(null);
+  React.useEffect(() => {
+    let on = true;
+    import('./Layers3D.jsx').then((m) => { if (on) setComp(() => m.default); });
+    return () => { on = false; };
+  }, []);
+  if (!Comp) {
+    return (
+      <div className="w-three">
+        <div className="three-loading mono"><span className="three-dots"><i /><i /><i /></span>loading 3D…</div>
+      </div>
+    );
+  }
+  return <Comp {...props} />;
+}
 
 const REGISTRY = {
   stagedReveal: StagedReveal,
@@ -37,7 +55,7 @@ const REGISTRY = {
   problemScene: ProblemScene,
   iconReveal: IconReveal,
   packetJourney: PacketJourney,
-  layers3d: Layers3D,
+  layers3d: Lazy3D,
 };
 
 export function Scene({ scene, activeStep, steps }) {
