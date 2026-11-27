@@ -18,6 +18,7 @@ import SizeScale from './SizeScale.jsx';
 import ProblemScene from './ProblemScene.jsx';
 import IconReveal from './IconReveal.jsx';
 import PacketJourney from './PacketJourney.jsx';
+import Layers3D from './Layers3D.jsx';
 
 const REGISTRY = {
   stagedReveal: StagedReveal,
@@ -36,6 +37,7 @@ const REGISTRY = {
   problemScene: ProblemScene,
   iconReveal: IconReveal,
   packetJourney: PacketJourney,
+  layers3d: Layers3D,
 };
 
 export function Scene({ scene, activeStep, steps }) {

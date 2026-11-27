@@ -5,7 +5,7 @@ difficulty: beginner
 order: 2
 
 scene:
-  widget: layerStack
+  widget: layers3d
   caption: Each instruction adds a read-only layer; the container writes to the top one.
   layers:
     - { label: base — debian, sub: shared }
