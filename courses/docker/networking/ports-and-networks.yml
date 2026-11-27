@@ -1,25 +1,17 @@
 title: Ports & container networks
-summary: How the outside reaches in, and how containers find each other.
+summary: Watch traffic reach a container, and containers talk to each other.
 minutes: 8
 difficulty: beginner
 order: 1
 
 scene:
-  widget: diagram
+  widget: packetJourney
   nodes:
-    - { id: browser, label: Browser, sub: your laptop, x: 14, y: 22 }
-    - { id: host, label: "Host :8080", sub: "-p 8080:80", x: 14, y: 68 }
-    - { id: web, label: web, sub: ":80", x: 48, y: 68 }
-    - { id: db, label: db, sub: ":5432", x: 82, y: 68 }
-  edges:
-    - [browser, host]
-    - [host, web]
-    - [web, db]
-  active:
-    - [browser, host]
-    - [host, web]
-    - [web, db]
-    - [browser, host, web, db]
+    - { id: browser, icon: device-laptop, label: Browser, sub: your laptop, x: 10, y: 30 }
+    - { id: host, icon: server, label: "Host :8080", sub: "-p 8080:80", x: 32, y: 66 }
+    - { id: web, logo: docker, label: web, sub: ":80", x: 60, y: 66 }
+    - { id: db, icon: database, label: db, sub: ":5432", x: 88, y: 66 }
+  path: [browser, host, web, db]
 
 steps:
   - kind: CONCEPT
@@ -34,8 +26,8 @@ steps:
     label: Publish
     body: >
       `-p 8080:80` tells Docker: traffic arriving on the **host's** 8080 should be
-      forwarded to port **80 inside** the container. Now `localhost:8080` reaches
-      `web`.
+      forwarded to port **80 inside** the `web` container. Now `localhost:8080`
+      reaches it.
     callout:
       kind: DIRECTION
       text: Only published ports are reachable from outside. Everything else stays private.
@@ -44,9 +36,8 @@ steps:
     title: Containers talk by name
     label: By name
     body: >
-      Put containers on the **same user-defined network** and they reach each
-      other by **name** — `web` connects to `db` at the hostname `db:5432`. No IPs,
-      no `-p` needed; that traffic never leaves the network.
+      On the **same user-defined network**, `web` reaches `db` by the **name**
+      `db:5432` — no `-p`, no IPs. That traffic never leaves the network.
     callout:
       kind: KEY IDEA
       text: Publish ports for the *outside* world; use the shared network for *container-to-container*.
@@ -59,7 +50,7 @@ steps:
       published port; `db` stays completely private inside the network.
     callout:
       kind: COMPOSE
-      text: Docker Compose creates this shared network for you automatically — that's next.
+      text: Docker Compose creates this shared network for you automatically.
 
 quiz:
   - question: Container `web` needs to reach `db`. What's required?

@@ -1,29 +1,18 @@
 title: What happens when you type docker run
-summary: The CLI, the daemon, containerd, runc — who does what.
+summary: Follow your command down through the daemon, containerd and runc.
 minutes: 8
 difficulty: intermediate
 order: 1
 
 scene:
-  widget: diagram
+  widget: packetJourney
   nodes:
-    - { id: cli, label: docker CLI, sub: you type, x: 12, y: 28 }
-    - { id: daemon, label: dockerd, sub: the daemon, x: 40, y: 28 }
-    - { id: registry, label: registry, sub: docker pull, x: 40, y: 72 }
-    - { id: containerd, label: containerd, sub: tracks containers, x: 68, y: 28 }
-    - { id: runc, label: runc, sub: spawns it, x: 90, y: 28 }
-    - { id: container, label: container, sub: your process, x: 90, y: 72 }
-  edges:
-    - [cli, daemon]
-    - [daemon, registry]
-    - [daemon, containerd]
-    - [containerd, runc]
-    - [runc, container]
-  active:
-    - [cli, daemon]
-    - [daemon, registry]
-    - [daemon, containerd]
-    - [containerd, runc, container]
+    - { id: cli, icon: terminal-2, label: docker CLI, sub: you type, x: 10, y: 52 }
+    - { id: dockerd, logo: docker, label: dockerd, sub: the daemon, x: 34, y: 52 }
+    - { id: containerd, icon: box, label: containerd, sub: supervises, x: 58, y: 52 }
+    - { id: runc, icon: cpu, label: runc, sub: kernel magic, x: 80, y: 52 }
+    - { id: container, icon: package, label: container, sub: your process, x: 94, y: 26 }
+  path: [cli, dockerd, containerd, runc, container]
 
 steps:
   - kind: CONCEPT
@@ -31,35 +20,35 @@ steps:
     label: CLI
     body: >
       `docker` on your terminal is a thin **client**. It doesn't run containers —
-      it sends your command over a socket to a background service and prints the
-      reply.
+      it packages your command and sends it over a socket to a background
+      service, then prints the reply.
     callout:
       kind: SO
       text: The real work happens in the daemon. The CLI just asks it nicely.
 
   - kind: CONCEPT
-    title: The daemon finds the image
+    title: The daemon takes over
     label: dockerd
     body: >
-      `dockerd` (the daemon) receives "run nginx". If the image isn't local, it
-      pulls it from a **registry** first. The daemon is the brain — API, images,
+      `dockerd` (the daemon) receives "run nginx". If the image isn't local it
+      pulls it from a registry first. The daemon is the brain — API, images,
       networks, volumes.
 
   - kind: CONCEPT
     title: containerd manages the lifecycle
     label: containerd
     body: >
-      The daemon hands off to **containerd**, the component that actually
-      supervises containers — start, stop, pause, delete. It's a standard
-      (OCI) piece you'll also see under Kubernetes.
+      The daemon hands off to **containerd**, which actually supervises
+      containers — start, stop, pause, delete. It's a standard (OCI) piece
+      you'll also meet under Kubernetes.
 
   - kind: CONCEPT
     title: runc does the kernel magic
     label: runc
     body: >
-      containerd calls **runc**, a tiny tool that talks to the Linux kernel to
-      create the isolated process — namespaces, cgroups, the lot — then gets out
-      of the way. Your container is now a real process on the host.
+      containerd calls **runc**, a tiny tool that asks the Linux kernel to create
+      the isolated process — namespaces, cgroups, the lot — then gets out of the
+      way. Your container is now a real process on the host.
     callout:
       kind: BIG PICTURE
       text: CLI → dockerd → containerd → runc → your process. Each layer is swappable and standardised.

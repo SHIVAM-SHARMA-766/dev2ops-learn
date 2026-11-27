@@ -1,25 +1,17 @@
 title: Docker Swarm in a nutshell
-summary: Turn a few machines into one cluster, built into Docker.
+summary: Watch a manager spread replicas across a cluster of workers.
 minutes: 8
 difficulty: advanced
 order: 1
 
 scene:
-  widget: diagram
+  widget: packetJourney
   nodes:
-    - { id: mgr, label: manager, sub: desired state, x: 50, y: 18 }
-    - { id: w1, label: worker 1, sub: 2 replicas, x: 18, y: 72 }
-    - { id: w2, label: worker 2, sub: 2 replicas, x: 50, y: 72 }
-    - { id: w3, label: worker 3, sub: 1 replica, x: 82, y: 72 }
-  edges:
-    - [mgr, w1]
-    - [mgr, w2]
-    - [mgr, w3]
-  active:
-    - [mgr]
-    - [mgr, w1, w2, w3]
-    - [mgr, w1, w3]
-    - [mgr, w1, w2, w3]
+    - { id: manager, icon: settings, label: manager, sub: desired state, x: 28, y: 22 }
+    - { id: w1, icon: box, label: worker 1, sub: 2 replicas, x: 14, y: 74 }
+    - { id: w2, icon: box, label: worker 2, sub: 2 replicas, x: 48, y: 74 }
+    - { id: w3, icon: box, label: worker 3, sub: 1 replica, x: 82, y: 74 }
+  path: [manager, w1, manager, w2, manager, w3]
 
 steps:
   - kind: CONCEPT
@@ -35,11 +27,18 @@ steps:
     label: Service
     body: >
       You don't start containers by hand — you declare a **service**:
-      `docker service create --replicas 5 web`. The manager spreads those 5
-      replicas (called tasks) across the workers.
+      `docker service create --replicas 5 web`. The manager spreads those replicas
+      (tasks) across the workers.
     callout:
       kind: KEY IDEA
       text: You describe the end state; Swarm figures out where each replica runs.
+
+  - kind: CONCEPT
+    title: Spread across the cluster
+    label: Spread
+    body: >
+      The manager places replicas on worker 1, worker 2, worker 3 — balancing the
+      load across the whole cluster automatically.
 
   - kind: CONCEPT
     title: Self-healing
@@ -54,8 +53,7 @@ steps:
     label: Stacks
     body: >
       `docker stack deploy -c compose.yaml myapp` deploys a whole Compose file to
-      the swarm as services. Same YAML you already know, now across many hosts
-      with built-in load balancing.
+      the swarm as services — the same YAML you know, now across many hosts.
     callout:
       kind: NICE
       text: Swarm is simple and ships with Docker — a gentle first taste of orchestration.
