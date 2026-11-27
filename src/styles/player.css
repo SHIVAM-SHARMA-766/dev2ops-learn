@@ -476,6 +476,10 @@
 .size-label { font-size: 11.5px; font-weight: 600; text-align: center; }
 .size-note { font-size: 9.5px; color: var(--ink-faint); text-align: center; max-width: 84px; }
 
+/* BigOBlocks — bespoke isometric Big-O towers */
+.w-bigo { width: 100%; max-width: 480px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.bigo-svg { width: 100%; height: auto; overflow: visible; }
+
 /* soft entrance when a lesson page loads */
 .stage__head { animation: d2o-rise 0.4s cubic-bezier(.2,.7,.3,1) both; }
 .stage__canvas { animation: d2o-rise 0.5s cubic-bezier(.2,.7,.3,1) 0.06s both; }

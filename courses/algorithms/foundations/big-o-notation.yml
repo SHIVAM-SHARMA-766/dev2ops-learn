@@ -5,56 +5,51 @@ difficulty: beginner
 order: 1
 
 scene:
-  widget: sizeScale
-  unit: " ops"
-  caption: "operations for n = 8 — watch the gap explode as n grows"
+  widget: bigOBlocks
+  nLabel: "n = 4"
+  caption: "each cube is one step of work, for an input of n = 4"
   items:
-    - { label: "O(1)", mb: 1, note: constant }
-    - { label: "O(log n)", mb: 3, note: logarithmic }
-    - { label: "O(n)", mb: 8, note: linear }
-    - { label: "O(n log n)", mb: 24, note: linearithmic }
-    - { label: "O(n²)", mb: 64, note: quadratic }
+    - { label: "O(1)", blocks: 1 }
+    - { label: "O(log n)", blocks: 2 }
+    - { label: "O(n)", blocks: 4 }
+    - { label: "O(n²)", blocks: 16 }
 
 steps:
-  - kind: CONCEPT
-    title: Count steps, not seconds
-    label: Why
-    body: >
-      How fast is an algorithm? Seconds depend on the machine. So instead we count
-      **steps** and ask how that count grows with the input size **n**. That's
-      Big-O.
-    callout:
-      kind: KEY IDEA
-      text: Big-O describes growth, not exact speed. On small inputs almost anything is fast.
-
   - kind: CONCEPT
     title: O(1) — constant
     label: O(1)
     body: >
-      **O(1)** does the same work no matter how big n is — array index, hash
-      lookup. One step, always. The gold standard.
+      How fast is an algorithm? Seconds depend on the machine, so we count
+      **steps** instead, and ask how that count grows with the input **n**.
+      **O(1)** does the same work no matter how big n is — one cube, always. An
+      array index, a hash lookup. The gold standard.
+    callout:
+      kind: KEY IDEA
+      text: Big-O describes growth, not exact speed. On small inputs almost anything is fast.
 
   - kind: CONCEPT
     title: O(log n) — logarithmic
     label: O(log n)
     body: >
       **O(log n)** halves the problem each step — binary search, balanced trees.
-      Double n and you add just **one** more step. Wonderfully scalable.
+      At n = 4 that's just **2** steps; double n and you add only **one** more
+      cube. Wonderfully scalable.
 
   - kind: CONCEPT
-    title: O(n) and O(n log n)
+    title: O(n) — linear
     label: O(n)
     body: >
-      **O(n)** touches every item once (a scan). **O(n log n)** is the sweet spot
-      for good sorts (merge, heap) — a scan times a logarithmic factor.
+      **O(n)** touches every item once — a scan. 4 items, 4 cubes. (The good
+      sorts are **O(n log n)**: a scan times a logarithmic factor — merge, heap,
+      quicksort.)
 
   - kind: PROBLEM
     title: O(n²) — the trap
     label: O(n²)
     body: >
-      **O(n²)** compares every item with every other — nested loops. At n = 8
-      it's 64 ops; at n = 1000 it's a **million**. This is the complexity that
-      quietly kills performance at scale.
+      **O(n²)** compares every item with every other — nested loops. At n = 4 it's
+      already **16** cubes; at n = 1000 it's a **million**. This is the complexity
+      that quietly kills performance at scale.
     callout:
       kind: TAKEAWAY
       text: On big inputs the class is everything. An O(n log n) solution crushes an O(n²) one.

@@ -18,6 +18,7 @@ import SizeScale from './SizeScale.jsx';
 import ProblemScene from './ProblemScene.jsx';
 import IconReveal from './IconReveal.jsx';
 import PacketJourney from './PacketJourney.jsx';
+import BigOBlocks from './BigOBlocks.jsx';
 
 // 3D pulls in three.js (~600KB); load it only when a 3D scene is actually shown,
 // as its own chunk, so the other 72 lessons never download it. Client-only.
@@ -56,6 +57,7 @@ const REGISTRY = {
   iconReveal: IconReveal,
   packetJourney: PacketJourney,
   layers3d: Lazy3D,
+  bigOBlocks: BigOBlocks,
 };
 
 export function Scene({ scene, activeStep, steps }) {
