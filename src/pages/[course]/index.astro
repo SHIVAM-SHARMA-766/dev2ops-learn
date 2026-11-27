@@ -30,6 +30,7 @@ const first = course.chapters.flatMap((ch) => ch.lessons)[0];
     <div class="co__progress" hidden>
       <div class="co__progressbar"><span></span></div>
       <span class="co__progresstext mono"></span>
+      <button class="co__reset mono" type="button">Reset</button>
     </div>
 
     <a class="btn btn--accent co__start" href={first ? first.path : '#'} data-firstpath={first ? first.path : ''}>
@@ -95,6 +96,18 @@ const first = course.chapters.flatMap((ch) => ch.lessons)[0];
         btn.href = cp.last;
         btn.textContent = (doneCount >= total && total ? 'Review the course →' : 'Resume →');
       }
+      // Reset this course's progress
+      const resetBtn = root.querySelector('.co__reset');
+      resetBtn?.addEventListener('click', () => {
+        if (!confirm('Reset your progress for this course? This clears completed lessons on this device.')) return;
+        try {
+          const all = JSON.parse(localStorage.getItem('d2o-progress') || '{}');
+          delete all[course];
+          if (all._resume && all._resume.course === course) delete all._resume;
+          localStorage.setItem('d2o-progress', JSON.stringify(all));
+        } catch (e) {}
+        location.reload();
+      });
     })();
   </script>
 </Base>
@@ -108,9 +121,12 @@ const first = course.chapters.flatMap((ch) => ch.lessons)[0];
   .co__tagline { color: var(--ink-soft); margin: 0 0 10px; }
   .co__meta { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--ink-faint); }
   .co__progress { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; }
+  .co__progress[hidden] { display: none; }
   .co__progressbar { flex: 1; height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
-  .co__progressbar span { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
+  .co__progressbar span { display: block; width: 0; height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
   .co__progresstext { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+  .co__reset { font-size: 11px; color: var(--ink-faint); background: none; border: 1px solid var(--line); padding: 3px 10px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+  .co__reset:hover { color: var(--accent-red); border-color: var(--accent-red); }
   .co__start { margin-bottom: 26px; }
   .co__chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
   .co__chapterhead { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; }

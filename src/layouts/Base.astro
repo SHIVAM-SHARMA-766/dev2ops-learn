@@ -33,8 +33,9 @@ const fullTitle = title ? `${title} · ${siteConfig.title}` : siteConfig.title;
     </script>
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <TopNav active={active} />
-    <main class={wide ? '' : 'wrap'} style={wide ? '' : 'padding-block: 32px 64px'}>
+    <main id="main" tabindex="-1" class={wide ? '' : 'wrap'} style={wide ? '' : 'padding-block: 32px 64px'}>
       <slot />
     </main>
     <Search client:idle />

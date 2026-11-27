@@ -256,6 +256,16 @@ h1, h2, h3, .mono { font-family: var(--font-mono); }
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
 }
 
+/* skip-to-content for keyboard / screen-reader users */
+.skip-link {
+  position: fixed; top: 10px; left: 10px; z-index: 200;
+  background: var(--accent); color: var(--accent-ink); padding: 9px 16px; border-radius: 8px;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600; text-decoration: none;
+  transform: translateY(-160%); transition: transform 0.18s ease;
+}
+.skip-link:focus { transform: none; outline: 2px solid var(--ink); outline-offset: 2px; }
+main:focus { outline: none; }
+
 /* gamification: your-progress card */
 .stats { padding: 18px 20px; margin: 0 0 18px; }
 .stats__complete {

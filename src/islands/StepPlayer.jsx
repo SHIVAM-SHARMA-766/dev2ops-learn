@@ -182,7 +182,7 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
       </aside>
 
       {/* ---- center: scene + timeline ---- */}
-      <section className="player__stage">
+      <section className="player__stage" aria-label={`${lesson.title} — visual`}>
         <div className="stage__head">
           <div className="stage__headmain">
             <button className="stage__menu" onClick={() => setNavOpen(true)} aria-label="Open lessons">☰</button>
@@ -245,7 +245,7 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
       </section>
 
       {/* ---- right: step narration ---- */}
-      <aside className="player__rail">
+      <aside className="player__rail" aria-label="Lesson narration">
         <div className="rail__scroll" ref={railRef}>
           <div className="rail__head mono">
             <span>Step {step + 1} / {total}</span>
