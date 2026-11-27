@@ -1,64 +1,73 @@
 title: Images are stacks of layers
-summary: Why pulling the second image is suddenly fast.
-minutes: 7
+summary: Watch an image build up, layer by layer, with the writable layer on top.
+minutes: 8
 difficulty: beginner
 order: 2
 
 scene:
-  widget: stagedReveal
-  caption: Each instruction adds a read-only layer; the container adds a writable one on top.
-  items:
-    - label: base layer — debian
-      note: The OS files. Shared by every image built FROM it.
-      tag: shared
-    - label: + node runtime
-      note: Added once, cached, reused across your images.
-      tag: shared
-    - label: + your dependencies
-      note: node_modules — rebuilt only when package.json changes.
-    - label: + your app code
-      note: The layer that changes on almost every build.
-    - label: + writable container layer
-      note: Where a running container's changes go. Gone when it's removed.
-      tag: ephemeral
+  widget: layerStack
+  caption: Each instruction adds a read-only layer; the container writes to the top one.
+  layers:
+    - { label: base — debian, sub: shared }
+    - { label: + node runtime, sub: shared }
+    - { label: + dependencies, sub: npm ci }
+    - { label: + your app code, sub: changes often }
+  writable: { label: container writable layer }
+  copyUp: true
 
 steps:
   - kind: CONCEPT
-    title: An image is layered
-    label: Layers
+    title: Start from a base layer
+    label: base
     body: >
-      An image isn't one blob — it's a **stack of read-only layers**, one per
-      build instruction. Docker stores each layer once and stacks them with a
-      union filesystem.
+      Every image begins with a **base layer** — here, Debian. It's read-only, and
+      shared: every image built `FROM debian` reuses this exact layer.
 
   - kind: CONCEPT
-    title: Layers are shared
-    label: Shared
+    title: Each instruction adds a layer
+    label: + runtime
     body: >
-      Pull two images built on `debian` and the debian layer is downloaded
-      **once**. That's why your second pull is suddenly fast — Docker already
-      has most of the layers.
+      Install the Node runtime and that becomes the **next layer**, stacked on top.
+      Docker stores each layer once and stacks them with a union filesystem.
+
+  - kind: CONCEPT
+    title: Layers are cached and shared
+    label: + deps
+    body: >
+      Your `npm ci` adds a dependencies layer. Because layers are
+      content-addressed, identical layers are **never downloaded or stored twice**
+      — that's why your second pull is suddenly fast.
     callout:
       kind: KEY IDEA
-      text: Layers are content-addressed and cached, so identical layers are never stored or pulled twice.
+      text: Order least-changing first. Change your code and only the top layers rebuild.
 
   - kind: CONCEPT
-    title: Order decides your cache
-    label: Cache
+    title: Your code on top
+    label: + code
     body: >
-      Change your app code and only the **top** layers rebuild; the base and
-      dependency layers stay cached. Change the base image and everything above
-      it rebuilds.
+      Finally your **app code** — the layer that changes on almost every build, so
+      it sits highest where it busts the least cache.
 
   - kind: CONCEPT
-    title: The container's own layer
-    label: Writable layer
+    title: The container adds a writable layer
+    label: writable
     body: >
-      When you run an image, Docker adds a thin **writable layer** on top. Files
-      a container writes live there — and vanish when the container is removed.
+      Run the image and Docker adds a thin **writable layer** on top. All the image
+      layers stay read-only; everything the running container writes lands here.
     callout:
       kind: FORESHADOW
-      text: Need data to survive? That's what volumes are for — coming up in chapter 4.
+      text: This writable layer vanishes when the container is removed — which is why data needs a volume.
+
+  - kind: CONCEPT
+    title: Editing a lower file copies it up
+    label: copy-up
+    body: >
+      Change a file that lives in a lower, read-only layer and Docker must **copy
+      it up** into the writable layer first. It's why heavy writes are slow and
+      belong in a volume, not the container's filesystem.
+    callout:
+      kind: REMEMBER
+      text: Read-only image layers + one writable layer = a container's disk.
 
 quiz:
   - question: Why is pulling a second image based on the same OS much faster?
@@ -69,3 +78,11 @@ quiz:
       - The image is smaller
     answer: 1
     explanation: Layers are cached and shared — only the new, unique layers are pulled.
+  - question: Where do a running container's writes go?
+    options:
+      - Into the image's base layer
+      - Into the thin writable layer on top
+      - Into the registry
+      - Nowhere
+    answer: 1
+    explanation: Image layers are read-only; writes land in the container's writable layer (and vanish with it).

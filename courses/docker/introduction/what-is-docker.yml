@@ -1,93 +1,69 @@
 title: What is Docker?
-summary: Why containers exist, and what they actually share with your machine.
+summary: Why containers exist — watch an app get packaged and shipped.
 minutes: 8
 difficulty: beginner
 order: 1
 
-# The scene stays on screen for the whole lesson and reacts to the active step.
 scene:
-  widget: stagedReveal
-  caption: One app, carried with everything it needs to run.
-  items:
-    - label: Your code
-      note: The program you wrote.
-    - label: + Runtime & libraries
-      note: The exact Node, Python or JVM version it needs.
-      tag: image
-    - label: + System tools & config
-      note: Everything the OS layer provides, pinned.
-      tag: image
-    - label: = An image
-      note: A sealed, read-only bundle. Build once, runs anywhere.
-      tag: build
-    - label: → A container
-      note: A running instance of that image — an isolated process.
-      tag: run
+  widget: shipScene
 
 steps:
   - kind: PROBLEM
     title: "“Works on my machine”"
-    label: The problem
+    label: Your code
     body: >
-      Your app runs fine on your laptop and breaks on the server. Different OS,
-      different library versions, a missing tool. The code is the same — the
-      *environment* is not.
+      You start with **your code**. It runs fine on your laptop. But the server
+      has a different OS, different library versions, a missing tool — and it
+      breaks. The code is the same; the *environment* is not.
     callout:
       kind: KEY IDEA
       text: Most deployment pain is environment drift, not bugs in the code.
 
   - kind: CONCEPT
-    title: Package the environment too
-    label: Bundle it
+    title: Add the whole environment
+    label: + runtime & libs
     body: >
-      What if you shipped the code **and** its whole environment together —
-      runtime, libraries, system tools — as one sealed unit? That unit is an
-      **image**.
+      So we bundle more than the code: the exact **runtime** and **libraries** it
+      needs. Everything the app depends on, gathered in one place.
 
   - kind: CONCEPT
-    title: Build once, run anywhere
-    label: The image
+    title: Seal it into an image
+    label: → image
     body: >
-      An image is read-only and reproducible. The same image runs identically
-      on your laptop, a teammate's machine and production, because it carries
-      its environment with it.
-
-  - kind: CONCEPT
-    title: A container is a running image
-    label: The container
-    body: >
-      Start an image and you get a **container**: an isolated process with its
-      own filesystem and network view. Stop it, start ten more — each one the
-      same.
+      Those pieces seal into an **image** — a read-only, reproducible bundle. Build
+      it once and it carries its whole environment with it.
     callout:
       kind: ANALOGY
-      text: An image is to a container what a class is to an object.
+      text: An image is like a shipping container — a standard box that fits on any ship, train or truck.
 
-  - kind: NOTICE
-    title: Not a virtual machine
-    label: vs a VM
+  - kind: CONCEPT
+    title: Ship it anywhere
+    label: ship it
     body: >
-      A container shares the **host's Linux kernel** — it does not boot its own
-      OS. That is why containers start in milliseconds and a VM takes seconds:
-      the VM brings a whole kernel, the container does not.
+      Copy that image to your laptop, a server, a CI runner — anywhere. The same
+      sealed bytes travel to each.
+
+  - kind: CONCEPT
+    title: It runs the same everywhere
+    label: runs identically
+    body: >
+      Each target starts the image as a **container** — an isolated process — and
+      because the environment came along inside the image, it behaves **identically**
+      on every machine.
     callout:
       kind: REMEMBER
-      text: Containers are isolated processes on the host kernel, not tiny VMs.
+      text: Build once, run anywhere. That identical-everywhere promise is the whole point of Docker.
 
 quiz:
-  - question: What does a container share with its host?
+  - question: What does packaging an app as an image actually solve?
     options:
-      - Nothing — it has its own kernel
-      - The host's kernel
-      - The host's user accounts
-      - The host's filesystem, always
+      - It makes the code shorter
+      - It carries the app's environment so it runs identically everywhere
+      - It encrypts the app
+      - It speeds up the CPU
     answer: 1
-    explanation: Containers are isolated processes on the host kernel. A virtual machine brings its own kernel.
-  - question: An image is to a container what…
-    options:
-      - a class is to an object
-      - a server is to a client
-      - a disk is to RAM
-      - a log is to a metric
+    explanation: The image bundles the runtime and libraries, eliminating environment drift between machines.
+  - question: A running instance of an image is called a…
+    options: ["container", "volume", "registry", "layer"]
     answer: 0
-    explanation: An image is the read-only template; a container is a running instance created from it.
+    explanation: An image is the sealed template; a container is a running instance of it.

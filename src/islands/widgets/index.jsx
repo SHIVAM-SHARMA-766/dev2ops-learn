@@ -9,6 +9,8 @@ import TerminalReplay from './TerminalReplay.jsx';
 import Compare from './Compare.jsx';
 import Flow from './Flow.jsx';
 import BuildCache from './BuildCache.jsx';
+import ShipScene from './ShipScene.jsx';
+import LayerStack from './LayerStack.jsx';
 
 const REGISTRY = {
   stagedReveal: StagedReveal,
@@ -18,6 +20,8 @@ const REGISTRY = {
   compare: Compare,
   flow: Flow,
   buildCache: BuildCache,
+  shipScene: ShipScene,
+  layerStack: LayerStack,
 };
 
 export function Scene({ scene, activeStep, steps }) {

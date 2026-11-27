@@ -1,79 +1,69 @@
 title: How layers are stored on disk
-summary: overlay2, lowerdir, upperdir — the union filesystem, demystified.
+summary: overlay2's lowerdir, upperdir and the copy-up trick — on screen.
 minutes: 7
 difficulty: advanced
 order: 4
 
 scene:
-  widget: stagedReveal
-  caption: overlay2 stacks read-only layers under one writable layer, merged into one view.
-  items:
-    - label: lowerdir — image layers
-      note: The read-only layers from the image, stacked oldest-to-newest.
-      tag: read-only
-    - label: upperdir — the container layer
-      note: The single writable layer. Every change a container makes lands here.
-      tag: writable
-    - label: merged — what the container sees
-      note: A unified view of lower + upper, as if it were one filesystem.
-      tag: view
-    - label: copy-up on write
-      note: Editing a file from a lower layer copies it up first, then writes.
-      tag: behaviour
+  widget: layerStack
+  caption: overlay2 stacks read-only lowerdirs under one writable upperdir, merged into one view.
+  layers:
+    - { label: lowerdir — base image, sub: read-only }
+    - { label: lowerdir — app layers, sub: read-only }
+  writable: { label: upperdir — the container layer }
+  copyUp: true
 
 steps:
   - kind: CONCEPT
-    title: Layers need a union filesystem
-    label: Union FS
+    title: Read-only image layers (lowerdir)
+    label: lowerdir
     body: >
-      An image is many read-only layers, but a container needs one coherent
-      filesystem it can also write to. The **overlay2** storage driver stitches
-      them together.
+      The image layers become **lowerdir** — read-only, stacked oldest to newest.
+      overlay2 is the storage driver that stitches them together.
 
   - kind: CONCEPT
-    title: lower (read-only) + upper (writable)
-    label: lower/upper
+    title: More lowerdirs stack up
+    label: more lower
     body: >
-      The image layers become **lowerdir** (read-only). On top sits a single
-      **upperdir** — the container's writable layer. Everything the container
-      writes goes into upperdir; the image layers are never touched.
+      Every image layer is another lowerdir in the stack. None of them is ever
+      modified — they're shared, read-only, content-addressed.
 
   - kind: CONCEPT
-    title: merged — the unified view
-    label: merged
+    title: One writable layer on top (upperdir)
+    label: upperdir
     body: >
-      overlay2 presents a **merged** view: files from upper shadow those from
-      lower, so the container just sees one filesystem. That's the illusion that
-      makes layers feel seamless.
+      On top sits a single **upperdir** — the container's writable layer.
+      Everything the container writes goes here; the lowerdirs are untouched. The
+      container sees a single **merged** view of lower + upper.
     callout:
       kind: KEY IDEA
-      text: Many read-only layers + one writable layer, unioned into a single view. That's a container's disk.
+      text: Many read-only lowerdirs + one writable upperdir, unioned into one filesystem.
 
   - kind: CONCEPT
-    title: Copy-up explains some surprises
-    label: Copy-up
+    title: Copy-up on write
+    label: copy-up
     body: >
-      Change a big file that lives in a lower layer and overlay2 must **copy it
-      up** into upper first — which can be slow for large files and makes the
-      writable layer grow. It's why heavy write workloads belong in a volume.
+      Modify a file that lives in a lowerdir and overlay2 must **copy it up** into
+      upperdir first, then write. For large files that's slow and grows the
+      writable layer — which is why heavy writes belong in a volume.
     callout:
       kind: TIE-IN
-      text: This is the mechanism behind "data in the writable layer is slow and disposable — use a volume".
+      text: This is the mechanism behind "data in the writable layer is slow and disposable".
 
 quiz:
   - question: Where do a container's writes go under overlay2?
     options:
-      - Into the image layers
+      - Into the image layers (lowerdir)
       - Into the single writable upperdir
       - Into a volume automatically
       - Nowhere
     answer: 1
-    explanation: Image layers are read-only (lowerdir); all writes land in the container's upperdir.
+    explanation: Image layers are read-only lowerdirs; all writes land in the container's upperdir.
   - question: What is "copy-up"?
     options:
       - Uploading an image
-      - Copying a lower-layer file into the writable layer before modifying it
+      - Copying a lowerdir file into upperdir before modifying it
       - Backing up a volume
       - Pushing to a registry
     answer: 1
-    explanation: To modify a file from a read-only layer, overlay2 copies it up to the writable layer first.
+    explanation: To modify a read-only lowerdir file, overlay2 copies it up to the writable upperdir first.
