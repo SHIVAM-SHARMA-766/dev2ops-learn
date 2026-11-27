@@ -10,11 +10,14 @@ layer, a request travel hop by hop — then answer a short quiz.
   with the arrow keys.
 - **Courses are content, not code.** A course is a folder of YAML lessons;
   adding one needs no code change.
-- **Reusable visuals.** Lessons compose a shared library of widgets
-  (staged reveal, code walkthrough, node diagram, …) — so a new course is
-  authored, not engineered.
-- **Progress saved in your browser.** Completed lessons, progress bars, sidebar
-  ticks. No sign-up, nothing sent anywhere.
+- **Reusable visuals, chosen per concept.** Lessons compose a shared widget
+  library — animated terminals, isometric packet-flow diagrams with real tech
+  logos, a WebGL 3D layer stack you can drag to rotate, and more — so a new
+  course is authored, not engineered. 3D is used only where depth helps.
+- **Progress saved in your browser.** Per-course and per-chapter progress,
+  sidebar ticks, resume-at-step, Ctrl+K search, XP and achievement badges. No
+  sign-up, nothing sent anywhere.
+- **Accessible.** Reduced-motion support, keyboard navigation, skip-to-content.
 - **Light and dark**, a per-course accent colour.
 - **$0 to run.** A static site on an always-free Oracle Cloud VM, deployed by
   GitHub Actions.

@@ -68,33 +68,59 @@ shipping custom code. `src/islands/widgets/index.jsx` is a registry mapping a
 widget name to a React component; `scene.widget` (or `step.viz.widget`) selects
 one and the rest of the object is its props, plus `activeStep` and `steps`.
 
+Pick the medium per concept — don't animate for its own sake. Rough guide:
+3D for stacking/volume, flow for movement/network, terminal for commands,
+codeWalk for files, compare for comparisons, diagram for branching state
+machines, illustrated scenes for metaphors.
+
 Current widgets:
 
-- **`stagedReveal`** — a column of items revealed/highlighted one per step.
-- **`codeWalk`** — a code block whose lines light up per step (`lines`,
-  `highlights[stepIndex]`), with a copy button.
-- **`diagram`** — a node/edge graph where `active[stepIndex]` lights nodes.
-- **`terminalReplay`** — a fake terminal that reveals command/output blocks per
-  step, with a copy button.
-- **`compare`** — two columns (before/after, A vs B) with optional per-step row
-  highlighting.
-- **`flow`** — a node graph with a dot that travels a `path` one hop per step
-  (request/packet/pipeline flow); the dot animates via CSS as the step changes.
-- **`buildCache`** — an animated `docker build` where each layer shows CACHED /
-  BUILDING (spinner) / DONE per step; `states[stepIndex]` drives it.
+- **Text / code / compare** — `codeWalk` (code block, lines light up per step,
+  copy button), `terminalReplay` (fake terminal revealing command/output blocks),
+  `stagedReveal` (a column revealed one per step), `compare` (two columns with
+  per-step row highlight), `diagram` (node/edge graph, `active[stepIndex]` lights
+  nodes — good for branching state machines).
+- **Animated 2D scenes** — `flow` (a dot travels a path one hop per step),
+  `packetJourney` (a glowing packet continuously loops the active hop on an
+  isometric grid, flowing dashed connector, real logos at nodes — the flagship
+  flow), `buildCache` (animated `docker build`, CACHED/BUILDING per step),
+  `sizeScale` (bars shrinking), `layerStack` (2D layer stack), `vmVsContainer`,
+  `volumeScene`, `isolationBox`, `problemScene`, `shipScene`, `iconReveal`
+  (real logos/icons revealed per step).
+- **3D (WebGL)** — `layers3d`: a real three.js scene (lit slabs, soft shadows,
+  drag-to-rotate, auto-orbit). **Lazy-loaded** via a client-only dynamic import
+  so three.js is a separate chunk, downloaded only on the 3D lessons — the other
+  lessons' island bundle stays ~37KB.
 
-Add a component and register it, and every course can use it. Bespoke,
-hand-animated scenes for a flagship lesson can be added as their own widget the
-same way.
+Add a component to `index.jsx` and register it, and every course can use it.
 
-The player also has **auto-play**: a Play/Replay control (and the space bar)
-auto-advances steps on a timer, so a lesson can play like an animation.
+The player also has **auto-play** (Play/Replay + space) and keyboard nav
+(← → steps, `[` `]` lessons, `R` replay, Ctrl+K search, `?` help).
+
+## Graphics & assets
+
+Scenes are drawn with a hand-crafted SVG illustration library
+(`src/islands/widgets/illustrations.jsx`): a shipping container, laptop, server,
+database, cloud and box, with gradients, isometric depth and soft shadows
+(render `<ArtDefs/>` once per scene `<svg>`).
+
+Real brand logos and icons live under `public/art/` (`logos/` from Devicon,
+`icons/` from Tabler — both MIT, see `public/art/LICENSES.md`) and are vendored
+locally by `scripts/fetch-art.mjs` (copies from the `devicon` / `@tabler/icons`
+npm packages — the npm registry is reachable where raw GitHub is not). They're
+served via `<img>` / `<Logo>` (brand colour) or a CSS mask (tinted to the
+accent), never from a CDN, so the build stays $0 and offline.
 
 ## Progress
 
 No accounts: progress is per browser, in `localStorage` under `d2o-progress`,
-shaped `{ "<course>": { completed: { "<chapter>/<lesson>": ts }, last } }`.
-Reads/writes are wrapped in try/catch so private mode just doesn't persist.
+shaped `{ "<course>": { completed: { "<chapter>/<lesson>": ts }, last, stepAt },
+_resume: {...} }` (`stepAt` resumes a lesson at its step; `_resume` is the
+most-recent lesson for the home "continue" banner). Reads/writes are wrapped in
+try/catch so private mode just doesn't persist. The static home and course pages
+read it with small inline progressive-enhancement scripts to show per-course /
+per-chapter progress, ticks and Resume; the sidebar and `StatsCard` island read
+it directly.
 
 ## Hosting and deploy
 
