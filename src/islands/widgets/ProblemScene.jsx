@@ -1,7 +1,7 @@
 // ProblemScene — the beginner "works on my machine" story, illustrated.
 // Laptop (works) ships an app to a server (breaks). Driven by activeStep.
 import React from 'react';
-import { Laptop, Server } from './illustrations.jsx';
+import { Laptop, Server, ArtDefs } from './illustrations.jsx';
 
 const STATUS = [
   { text: 'It runs perfectly on your laptop.', tone: 'good' },
@@ -18,6 +18,7 @@ export default function ProblemScene({ activeStep = 0 }) {
   return (
     <div className="w-illus">
       <svg viewBox="0 0 420 180" className="illus-svg" role="img" aria-label="An app that works on a laptop but breaks on the server">
+        <ArtDefs />
         <Laptop x={20} y={56} scale={1.05} state="ok" />
         <text x="62" y="140" textAnchor="middle" className="illus-cap">your laptop</text>
 

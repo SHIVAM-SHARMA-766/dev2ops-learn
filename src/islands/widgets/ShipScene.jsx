@@ -2,7 +2,7 @@
 // shipping container (the image), which then runs on a laptop, a server and the
 // cloud. Driven by activeStep (0..4).
 import React from 'react';
-import { Container, Laptop, Server, Cloud } from './illustrations.jsx';
+import { Container, Laptop, Server, Cloud, ArtDefs } from './illustrations.jsx';
 
 function InBox({ y, label, show }) {
   return (
@@ -24,6 +24,7 @@ export default function ShipScene({ activeStep = 0 }) {
   return (
     <div className="w-illus">
       <svg viewBox="0 0 440 210" className="illus-svg">
+        <ArtDefs />
         {/* inputs (fade out once sealed) */}
         <g style={{ opacity: sealed ? 0 : 1, transition: 'opacity 0.5s' }}>
           <InBox y={40} label="code" show={s >= 0} />

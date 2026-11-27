@@ -74,5 +74,21 @@ quiz:
 Set `status: published` in `course.json` to include a course in production
 builds; anything else is visible only in `npm run dev`.
 
+## Graphics
+
+Scenes are drawn with a small illustrated SVG library
+(`src/islands/widgets/illustrations.jsx`): a shipping container, laptop, server,
+database and cloud, with gradients, isometric depth and soft shadows — reusable
+by any course's widgets.
+
+For real brand logos (Docker, Node, Postgres, …), vendor them locally once:
+
+```sh
+node scripts/fetch-art.mjs    # downloads Devicon + Tabler SVGs into public/art/
+```
+
+They're served from the site (no CDN), so the build stays $0 and offline. See
+`public/art/LICENSES.md` for sources, licenses and other free packs you can add.
+
 See **[ARCHITECTURE.md](ARCHITECTURE.md)** for the content model and the widget
 API, and **[docs/ROADMAP.md](docs/ROADMAP.md)** for what's next.
