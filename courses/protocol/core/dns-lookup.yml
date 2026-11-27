@@ -1,0 +1,78 @@
+title: DNS — finding the address
+summary: How a name like example.com becomes an IP address, hop by hop.
+minutes: 7
+difficulty: beginner
+order: 1
+
+scene:
+  widget: packetJourney
+  nodes:
+    - { id: you, icon: device-laptop, label: You, sub: "example.com?", x: 10, y: 50 }
+    - { id: resolver, icon: server, label: Resolver, sub: "8.8.8.8", x: 32, y: 50 }
+    - { id: root, icon: world, label: Root, sub: "the . servers", x: 55, y: 22 }
+    - { id: tld, icon: server, label: ".com TLD", sub: who runs .com, x: 78, y: 22 }
+    - { id: auth, icon: database, label: Authoritative, sub: has the answer, x: 93, y: 55 }
+  path: [you, resolver, root, tld, auth]
+
+steps:
+  - kind: CONCEPT
+    title: You know the name, not the number
+    label: Name
+    body: >
+      Computers talk in **IP addresses** (like 93.184.216.34), but you type
+      **names** (example.com). DNS — the Domain Name System — is the internet's
+      phone book that turns one into the other.
+
+  - kind: STEP
+    title: Ask the resolver
+    label: Resolver
+    body: >
+      Your machine asks its **resolver** (often your ISP's, or 8.8.8.8). If it has
+      the answer cached, you're done in a millisecond. If not, it goes hunting on
+      your behalf.
+
+  - kind: STEP
+    title: Start at the root
+    label: Root
+    body: >
+      The resolver asks a **root server**: "who handles `.com`?" The root doesn't
+      know the IP — it just points to the next level down.
+    callout:
+      kind: KEY IDEA
+      text: DNS is hierarchical. Each server knows only who to ask next, not the whole answer.
+
+  - kind: STEP
+    title: Down to the TLD
+    label: TLD
+    body: >
+      The **.com TLD server** is asked next. It knows which **authoritative**
+      server holds the records for *example.com*, and points there.
+
+  - kind: STEP
+    title: The authoritative answer
+    label: Answer
+    body: >
+      The **authoritative** server finally returns the IP. The resolver caches it
+      (for the record's TTL) and hands it back to you. Now your browser can
+      actually connect.
+    callout:
+      kind: REMEMBER
+      text: Resolver → root → TLD → authoritative. Caching means most lookups skip most of this.
+
+quiz:
+  - question: What does DNS actually translate?
+    options:
+      - IP addresses into names
+      - Human names into IP addresses
+      - URLs into HTML
+      - Ports into protocols
+    answer: 1
+    explanation: DNS resolves a human-readable name to the IP address machines route to.
+  - question: Why is DNS described as hierarchical?
+    options:
+      - It's slow
+      - Each level only points to the next (root → TLD → authoritative)
+      - It uses encryption
+      - It runs on one server
+    answer: 1
+    explanation: No single server has everything; each delegates down the tree to the authority.

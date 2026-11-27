@@ -1,0 +1,73 @@
+title: TCP — the three-way handshake
+summary: How two machines agree to talk reliably before sending any data.
+minutes: 6
+difficulty: beginner
+order: 2
+
+scene:
+  widget: packetJourney
+  nodes:
+    - { id: client, icon: device-laptop, label: Client, sub: wants to connect, x: 16, y: 50 }
+    - { id: server, icon: server, label: Server, sub: ":443", x: 84, y: 50 }
+  path: [client, server, client, server]
+
+steps:
+  - kind: CONCEPT
+    title: Reliable needs a handshake
+    label: Why
+    body: >
+      TCP promises **reliable, ordered** delivery. Before any real data flows,
+      both sides agree they're ready and sync up their counters — a quick
+      three-step handshake.
+
+  - kind: STEP
+    title: SYN
+    label: SYN →
+    body: >
+      The client sends a **SYN** ("let's synchronise") with a starting sequence
+      number. It's knocking on the door.
+
+  - kind: STEP
+    title: SYN-ACK
+    label: ← SYN-ACK
+    body: >
+      The server replies **SYN-ACK** — it acknowledges the client's SYN and sends
+      its own SYN. "Heard you, here's my number too."
+
+  - kind: STEP
+    title: ACK
+    label: ACK →
+    body: >
+      The client sends a final **ACK**. Both sides now know each other's sequence
+      numbers and agree the connection is open.
+    callout:
+      kind: KEY IDEA
+      text: SYN → SYN-ACK → ACK. Three messages, and a reliable pipe is established.
+
+  - kind: CONCEPT
+    title: Now data can flow
+    label: Established
+    body: >
+      With the handshake done, data is sent in numbered segments, each
+      acknowledged. Lost segments are re-sent — that's the "reliable" in TCP.
+    callout:
+      kind: CONTRAST
+      text: UDP skips all this — no handshake, no guarantees — which is why it's faster for video and games.
+
+quiz:
+  - question: What are the three messages of the TCP handshake, in order?
+    options:
+      - ACK, SYN, SYN-ACK
+      - SYN, SYN-ACK, ACK
+      - SYN, ACK, SYN-ACK
+      - GET, 200, CLOSE
+    answer: 1
+    explanation: Client SYN → server SYN-ACK → client ACK, then the connection is open.
+  - question: Why does TCP do a handshake but UDP doesn't?
+    options:
+      - TCP is older
+      - TCP guarantees reliable, ordered delivery; UDP trades that for speed
+      - UDP is encrypted
+      - They are the same
+    answer: 1
+    explanation: The handshake sets up reliability; UDP skips it to be faster and lighter.

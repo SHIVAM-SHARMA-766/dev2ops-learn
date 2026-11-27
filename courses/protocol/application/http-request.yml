@@ -1,0 +1,68 @@
+title: HTTP — request and response
+summary: The simple text conversation behind every web page.
+minutes: 7
+difficulty: beginner
+order: 1
+
+scene:
+  widget: packetJourney
+  nodes:
+    - { id: browser, icon: device-laptop, label: Browser, sub: GET /, x: 14, y: 50 }
+    - { id: server, icon: server, label: Server, sub: nginx, x: 62, y: 50 }
+    - { id: back, icon: device-laptop, label: Browser, sub: renders, x: 92, y: 24 }
+  path: [browser, server, back]
+
+steps:
+  - kind: CONCEPT
+    title: HTTP is just text
+    label: Text
+    body: >
+      Once TCP (and usually TLS) is set up, the browser and server talk **HTTP** —
+      a plain-text request and response. One asks, the other answers. That's the
+      whole web.
+
+  - kind: STEP
+    title: The request
+    label: Request
+    body: >
+      The browser sends a **request line** (`GET / HTTP/1.1`), a **Host** header
+      and others (cookies, accepted formats). For a POST it also carries a body.
+
+  - kind: STEP
+    title: The server answers
+    label: Response
+    body: >
+      The server replies with a **status code** (200 OK, 404 Not Found…),
+      response headers, and the body — the HTML, JSON or image you asked for.
+    callout:
+      kind: STATUS CODES
+      text: 2xx success · 3xx redirect · 4xx your mistake · 5xx the server's mistake.
+
+  - kind: STEP
+    title: The browser renders
+    label: Render
+    body: >
+      The browser reads the body and renders it — and for a web page, kicks off
+      **more** requests for the CSS, JavaScript and images it references, often
+      reusing the same connection.
+    callout:
+      kind: KEY IDEA
+      text: HTTP is stateless — each request stands alone. Cookies and tokens add the "who are you" on top.
+
+quiz:
+  - question: What does an HTTP status code in the 5xx range mean?
+    options:
+      - Success
+      - A redirect
+      - The client made a mistake
+      - The server had an error
+    answer: 3
+    explanation: 5xx = server-side error; 4xx is the client's mistake, 2xx is success.
+  - question: What does "HTTP is stateless" mean?
+    options:
+      - It has no status codes
+      - Each request is independent; the server doesn't remember the last one by default
+      - It can't send data
+      - It's encrypted
+    answer: 1
+    explanation: Statelessness means requests don't inherently share memory — cookies/tokens add continuity.

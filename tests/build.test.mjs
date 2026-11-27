@@ -12,9 +12,9 @@ test('at least one published course exists', () => {
   assert.ok(courses.length > 0, 'no published courses found');
 });
 
-test('home page names every published course', () => {
+test('home page links to every published course', () => {
   const html = readFileSync(new URL('index.html', dist), 'utf8');
-  for (const c of courses) assert.ok(html.includes(c.title), `home missing: ${c.title}`);
+  for (const c of courses) assert.ok(html.includes(`/${c.slug}/`), `home missing: ${c.slug}`);
 });
 
 test('every course overview and lesson page is built', () => {

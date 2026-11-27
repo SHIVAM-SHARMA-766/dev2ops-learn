@@ -1,0 +1,74 @@
+title: Big-O notation
+summary: Count steps, not seconds — and watch how they grow with n.
+minutes: 8
+difficulty: beginner
+order: 1
+
+scene:
+  widget: sizeScale
+  unit: " ops"
+  caption: "operations for n = 8 — watch the gap explode as n grows"
+  items:
+    - { label: "O(1)", mb: 1, note: constant }
+    - { label: "O(log n)", mb: 3, note: logarithmic }
+    - { label: "O(n)", mb: 8, note: linear }
+    - { label: "O(n log n)", mb: 24, note: linearithmic }
+    - { label: "O(n²)", mb: 64, note: quadratic }
+
+steps:
+  - kind: CONCEPT
+    title: Count steps, not seconds
+    label: Why
+    body: >
+      How fast is an algorithm? Seconds depend on the machine. So instead we count
+      **steps** and ask how that count grows with the input size **n**. That's
+      Big-O.
+    callout:
+      kind: KEY IDEA
+      text: Big-O describes growth, not exact speed. On small inputs almost anything is fast.
+
+  - kind: CONCEPT
+    title: O(1) — constant
+    label: O(1)
+    body: >
+      **O(1)** does the same work no matter how big n is — array index, hash
+      lookup. One step, always. The gold standard.
+
+  - kind: CONCEPT
+    title: O(log n) — logarithmic
+    label: O(log n)
+    body: >
+      **O(log n)** halves the problem each step — binary search, balanced trees.
+      Double n and you add just **one** more step. Wonderfully scalable.
+
+  - kind: CONCEPT
+    title: O(n) and O(n log n)
+    label: O(n)
+    body: >
+      **O(n)** touches every item once (a scan). **O(n log n)** is the sweet spot
+      for good sorts (merge, heap) — a scan times a logarithmic factor.
+
+  - kind: PROBLEM
+    title: O(n²) — the trap
+    label: O(n²)
+    body: >
+      **O(n²)** compares every item with every other — nested loops. At n = 8
+      it's 64 ops; at n = 1000 it's a **million**. This is the complexity that
+      quietly kills performance at scale.
+    callout:
+      kind: TAKEAWAY
+      text: On big inputs the class is everything. An O(n log n) solution crushes an O(n²) one.
+
+quiz:
+  - question: Why count steps instead of measuring seconds?
+    options:
+      - Seconds are hard to read
+      - Seconds depend on the machine; steps describe how the algorithm scales
+      - Steps are always faster
+      - It's tradition
+    answer: 1
+    explanation: Big-O is machine-independent — it captures growth with n, not raw speed.
+  - question: Binary search on a sorted array is which complexity?
+    options: ["O(1)", "O(log n)", "O(n)", "O(n²)"]
+    answer: 1
+    explanation: It halves the search space each step — logarithmic, O(log n).

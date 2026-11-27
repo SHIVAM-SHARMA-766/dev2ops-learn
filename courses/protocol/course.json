@@ -1,0 +1,15 @@
+{
+  "title": "How the internet works",
+  "tagline": "Learn the protocols that move your data — packet by packet.",
+  "description": "A hands-on tour of the protocols behind the internet: DNS, TCP, IP, HTTP and the rest. Watch a request travel across the network, hop by hop, and see what each protocol actually does.",
+  "level": "Beginner → Pro",
+  "icon": "🌐",
+  "accent": "teal",
+  "status": "published",
+  "order": 2,
+  "chapters": [
+    { "slug": "core", "title": "Core protocols" },
+    { "slug": "application", "title": "Application protocols" },
+    { "slug": "security", "title": "Security & tunnels" }
+  ]
+}

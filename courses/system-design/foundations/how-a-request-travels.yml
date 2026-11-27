@@ -1,0 +1,77 @@
+title: How a request travels
+summary: Follow one page load through a real stack — and see where time goes.
+minutes: 8
+difficulty: beginner
+order: 1
+
+scene:
+  widget: packetJourney
+  nodes:
+    - { id: you, icon: device-laptop, label: You, sub: browser, x: 8, y: 50 }
+    - { id: dns, icon: world, label: DNS, sub: find the IP, x: 26, y: 22 }
+    - { id: lb, icon: network, label: Load balancer, sub: one entry, x: 44, y: 50 }
+    - { id: web, icon: server, label: App server, sub: your code, x: 66, y: 50 }
+    - { id: cache, icon: cpu, label: Cache, sub: Redis, x: 84, y: 24 }
+    - { id: db, icon: database, label: Database, sub: source of truth, x: 92, y: 60 }
+  path: [you, dns, lb, web, cache, db]
+
+steps:
+  - kind: CONCEPT
+    title: Before you optimise, follow the path
+    label: The path
+    body: >
+      "Make it faster" means nothing until you know **where the time goes**. So
+      follow a single request through the system, hop by hop.
+
+  - kind: STEP
+    title: Find the server
+    label: DNS
+    body: >
+      The browser resolves the name via **DNS**, then opens a connection to the
+      system's public address. First bytes cost a round trip or two.
+
+  - kind: STEP
+    title: Hit the front door
+    label: Load balancer
+    body: >
+      Traffic lands on a **load balancer** — one stable entry point that spreads
+      requests across many identical app servers behind it.
+    callout:
+      kind: KEY IDEA
+      text: Users see one address; behind it can be one server or a thousand.
+
+  - kind: STEP
+    title: Run the application
+    label: App
+    body: >
+      An **app server** runs your code: auth, business logic, assembling a
+      response. To do that it usually needs data.
+
+  - kind: STEP
+    title: Cache first, database if you must
+    label: Cache → DB
+    body: >
+      Fast data comes from a **cache** (memory, microseconds). On a miss, the app
+      reads the **database** (disk, milliseconds) and often populates the cache
+      for next time.
+    callout:
+      kind: WHERE TIME GOES
+      text: Network round trips and database reads dominate. Everything else is usually noise.
+
+quiz:
+  - question: What's the job of a load balancer?
+    options:
+      - Store data
+      - Spread requests across many servers behind one entry point
+      - Resolve names to IPs
+      - Cache responses
+    answer: 1
+    explanation: It's the single front door distributing traffic to interchangeable app servers.
+  - question: Why check the cache before the database?
+    options:
+      - The cache is bigger
+      - Memory (cache) is far faster than disk (database)
+      - The database is unreliable
+      - It's required
+    answer: 1
+    explanation: A cache hit is microseconds in memory; a database read is milliseconds on disk.

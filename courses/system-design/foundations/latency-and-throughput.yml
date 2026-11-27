@@ -1,0 +1,80 @@
+title: Latency vs throughput
+summary: Two different questions — how fast, and how much.
+minutes: 6
+difficulty: beginner
+order: 2
+
+scene:
+  widget: compare
+  left:
+    title: Latency
+    items:
+      - How long ONE request takes
+      - Measured in ms (p50, p95, p99)
+      - "“The page felt slow”"
+      - "Fixed by: caching, fewer round trips"
+      - A single car's travel time
+  right:
+    title: Throughput
+    items:
+      - How MANY requests per second
+      - Measured in req/s, QPS
+      - "“We can't handle the traffic”"
+      - "Fixed by: more servers, batching"
+      - Cars per hour on the highway
+  highlight:
+    - [0, 1]
+    - [2]
+    - [3]
+    - [4]
+
+steps:
+  - kind: CONCEPT
+    title: Two separate things
+    label: Two things
+    body: >
+      People say "performance" and mean one of two very different things.
+      Separating them is the first skill in system design.
+
+  - kind: CONCEPT
+    title: Latency — how fast
+    label: Latency
+    body: >
+      **Latency** is the time for a *single* request, end to end. You care about
+      the **tail** (p95, p99), not just the average — the slow 1% is what users
+      remember.
+    callout:
+      kind: KEY IDEA
+      text: Report p95/p99, not the mean. Averages hide the requests that hurt.
+
+  - kind: CONCEPT
+    title: Throughput — how much
+    label: Throughput
+    body: >
+      **Throughput** is how *many* requests the system handles per second. A
+      system can have great latency and still fall over when throughput spikes.
+
+  - kind: NOTICE
+    title: They trade off
+    label: Trade-off
+    body: >
+      Pushing one often hurts the other. **Batching** raises throughput but adds
+      latency. More **parallelism** helps throughput but contends for shared
+      resources. Design for the one that matters to your users.
+    callout:
+      kind: ANALOGY
+      text: Latency = one car's trip time. Throughput = cars per hour. A wider road helps throughput, not a single trip.
+
+quiz:
+  - question: Which metric answers "how many requests per second can we handle?"
+    options: ["Latency", "Throughput", "p99", "Bandwidth"]
+    answer: 1
+    explanation: Throughput is request volume over time; latency is a single request's duration.
+  - question: Why report p95/p99 latency instead of the average?
+    options:
+      - It's easier
+      - The slow tail is what users actually feel; averages hide it
+      - Averages are wrong
+      - p99 is faster
+    answer: 1
+    explanation: A good average can still hide a painful slow 1-5% — the tail users remember.

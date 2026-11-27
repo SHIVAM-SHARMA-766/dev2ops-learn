@@ -1,0 +1,26 @@
+{
+  "title": "Algorithms & data structures",
+  "tagline": "DSA, step by step — watch each algorithm actually work.",
+  "description": "Data structures and algorithms from first principles: Big-O, arrays, linked lists, stacks, trees, graphs, sorting, dynamic programming and more — each one explained by watching it run, step by step.",
+  "level": "Beginner → Pro",
+  "icon": "🧮",
+  "accent": "red",
+  "status": "published",
+  "order": 4,
+  "chapters": [
+    { "slug": "foundations", "title": "Foundations" },
+    { "slug": "arrays", "title": "Arrays & strings" },
+    { "slug": "linked-lists", "title": "Linked lists" },
+    { "slug": "stacks-queues", "title": "Stacks & queues" },
+    { "slug": "hashing", "title": "Hashing" },
+    { "slug": "trees", "title": "Trees" },
+    { "slug": "heaps", "title": "Heaps" },
+    { "slug": "graphs", "title": "Graphs" },
+    { "slug": "sorting-searching", "title": "Sorting & searching" },
+    { "slug": "greedy", "title": "Greedy" },
+    { "slug": "backtracking", "title": "Backtracking" },
+    { "slug": "dynamic-programming", "title": "Dynamic programming" },
+    { "slug": "bit-manipulation", "title": "Bit manipulation" },
+    { "slug": "hard", "title": "Hard problems" }
+  ]
+}

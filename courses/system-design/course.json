@@ -1,0 +1,21 @@
+{
+  "title": "System design",
+  "tagline": "Design systems that scale — from one request to millions.",
+  "description": "An interactive system-design course: follow a request through a real stack, then learn to scale it — load balancing, caching, databases, queues, reliability and the trade-offs behind every big system.",
+  "level": "Intermediate",
+  "icon": "🏗️",
+  "accent": "green",
+  "status": "published",
+  "order": 3,
+  "chapters": [
+    { "slug": "foundations", "title": "Foundations" },
+    { "slug": "scaling", "title": "Scaling" },
+    { "slug": "data", "title": "Data & storage" },
+    { "slug": "communication", "title": "Communication" },
+    { "slug": "reliability", "title": "Reliability" },
+    { "slug": "architecture", "title": "Architecture" },
+    { "slug": "security", "title": "Security" },
+    { "slug": "shipping", "title": "Shipping" },
+    { "slug": "whole-systems", "title": "Whole systems" }
+  ]
+}
