@@ -17,6 +17,7 @@ import IsolationBox from './IsolationBox.jsx';
 import SizeScale from './SizeScale.jsx';
 import ProblemScene from './ProblemScene.jsx';
 import IconReveal from './IconReveal.jsx';
+import PacketJourney from './PacketJourney.jsx';
 
 const REGISTRY = {
   stagedReveal: StagedReveal,
@@ -34,6 +35,7 @@ const REGISTRY = {
   sizeScale: SizeScale,
   problemScene: ProblemScene,
   iconReveal: IconReveal,
+  packetJourney: PacketJourney,
 };
 
 export function Scene({ scene, activeStep, steps }) {

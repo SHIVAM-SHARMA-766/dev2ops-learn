@@ -1,0 +1,70 @@
+title: How a request reaches your app
+summary: Follow one request from a browser all the way to your container.
+minutes: 7
+difficulty: beginner
+order: 1
+
+scene:
+  widget: packetJourney
+  nodes:
+    - { id: you, icon: device-laptop, label: You, sub: browser, x: 10, y: 52 }
+    - { id: dns, icon: world, label: DNS, sub: find the IP, x: 30, y: 20 }
+    - { id: host, icon: server, label: Host, sub: ":443", x: 52, y: 52 }
+    - { id: container, logo: docker, label: Container, sub: ":3000", x: 74, y: 52 }
+    - { id: app, logo: nodejs, label: App, sub: handles it, x: 93, y: 52 }
+  path: [you, dns, host, container, app]
+
+steps:
+  - kind: STEP
+    title: Find the address
+    label: DNS
+    body: >
+      You type the URL and hit enter. First your browser asks **DNS** "what's the
+      IP for this name?" — just like looking up a phone number before you call.
+
+  - kind: STEP
+    title: Connect to the host
+    label: Connect
+    body: >
+      With the IP, your browser opens a connection to the **host** machine on port
+      **443** (HTTPS). The packet travels across the internet and arrives at the
+      server.
+
+  - kind: STEP
+    title: Into the container
+    label: "-p 443:3000"
+    body: >
+      The host has a **published port** (`-p`) that forwards incoming traffic to
+      your **container's** port 3000. The request crosses from the host into the
+      container.
+    callout:
+      kind: RECALL
+      text: This is exactly the `-p HOST:CONTAINER` port mapping from the networking chapter.
+
+  - kind: STEP
+    title: Your app handles it
+    label: App
+    body: >
+      Inside the container, your **app** (here Node) receives the request, does its
+      work — maybe queries a database — and prepares a response.
+    callout:
+      kind: NEXT
+      text: "Next lesson: watch the response make the whole trip back."
+
+quiz:
+  - question: What forwards a request from the host into the container?
+    options:
+      - DNS
+      - The published port mapping (-p HOST:CONTAINER)
+      - The app
+      - A volume
+    answer: 1
+    explanation: "-p maps a host port to a container port, so outside traffic reaches the app inside."
+  - question: What does DNS do in this journey?
+    options:
+      - Runs the app
+      - Resolves the name to an IP address
+      - Stores data
+      - Balances load
+    answer: 1
+    explanation: DNS translates the human name into the IP the browser connects to.

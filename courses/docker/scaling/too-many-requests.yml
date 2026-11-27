@@ -1,0 +1,59 @@
+title: When one container isn't enough
+summary: A single container has limits — watch them get hit.
+minutes: 5
+difficulty: beginner
+order: 1
+
+scene:
+  widget: packetJourney
+  nodes:
+    - { id: users, icon: world, label: Users, sub: lots of them, x: 14, y: 50 }
+    - { id: web, logo: nodejs, label: web, sub: one container, x: 66, y: 50 }
+  path: [users, web]
+
+steps:
+  - kind: STORY
+    title: One container, happy days
+    label: Fine
+    body: >
+      You launch your app in a container. A few users show up, requests flow in,
+      everything's fast. Life is good.
+
+  - kind: PROBLEM
+    title: Then it gets popular
+    label: Popular
+    body: >
+      Traffic grows. **More** requests arrive than one container can handle at
+      once. They queue up, responses slow down, and eventually some time out.
+    callout:
+      kind: LIMIT
+      text: One container = one set of CPU/memory. There's a ceiling to what it can serve.
+
+  - kind: CONCEPT
+    title: Two ways to grow
+    label: Grow
+    body: >
+      You could make the container **bigger** (more CPU/RAM — "vertical" scaling),
+      but there's always a biggest machine. Or you could run **more copies** of it
+      ("horizontal" scaling) and share the load.
+    callout:
+      kind: NEXT
+      text: Horizontal scaling needs something to split traffic between the copies — a load balancer. Next lesson.
+
+quiz:
+  - question: What's the limit of a single container under heavy load?
+    options:
+      - It has unlimited capacity
+      - Its own CPU/memory ceiling — requests queue and slow down
+      - It never slows
+      - It duplicates itself
+    answer: 1
+    explanation: One container has fixed resources; past its capacity, requests queue and time out.
+  - question: What is horizontal scaling?
+    options:
+      - Making one container bigger
+      - Running more copies and sharing the load
+      - Deleting the container
+      - Adding a volume
+    answer: 1
+    explanation: Horizontal scaling adds more instances; vertical scaling makes one instance bigger.

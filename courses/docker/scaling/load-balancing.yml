@@ -1,0 +1,82 @@
+title: Load balancing across replicas
+summary: Watch one entry point spread requests over many containers.
+minutes: 7
+difficulty: intermediate
+order: 2
+
+scene:
+  widget: packetJourney
+  nodes:
+    - { id: users, icon: world, label: Users, sub: traffic, x: 8, y: 50 }
+    - { id: lb, logo: nginx, label: Load balancer, sub: one entry point, x: 34, y: 50 }
+    - { id: web1, logo: nodejs, label: web 1, x: 72, y: 20 }
+    - { id: web2, logo: nodejs, label: web 2, x: 76, y: 50 }
+    - { id: web3, logo: nodejs, label: web 3, x: 72, y: 80 }
+  path: [users, lb, web1, lb, web2, lb, web3]
+
+steps:
+  - kind: CONCEPT
+    title: One front door
+    label: Entry
+    body: >
+      Put a **load balancer** (like Nginx) in front. All traffic hits **one**
+      address — users never know or care how many containers are behind it.
+
+  - kind: STEP
+    title: Send it to a replica
+    label: → web 1
+    body: >
+      The load balancer forwards the first request to **web 1**, one of several
+      identical container **replicas** running your app.
+    callout:
+      kind: KEY IDEA
+      text: Replicas are interchangeable — same image, so any of them can serve any request.
+
+  - kind: STEP
+    title: Replica answers
+    label: Reply
+    body: >
+      web 1 handles it and replies through the load balancer back to the user.
+      Meanwhile the balancer is already free for the next request.
+
+  - kind: STEP
+    title: Next one, next replica
+    label: → web 2
+    body: >
+      The next request goes to **web 2**. Spreading requests evenly like this is
+      called **round-robin** — the simplest balancing strategy.
+
+  - kind: STEP
+    title: And again
+    label: Reply
+    body: >
+      web 2 responds. The load is now shared — no single container is doing all
+      the work.
+
+  - kind: STEP
+    title: Scale by adding replicas
+    label: → web 3
+    body: >
+      Need more capacity? Run **more replicas** (`docker compose up --scale
+      web=5`); the balancer just spreads across them. That's horizontal scaling.
+    callout:
+      kind: BIG PICTURE
+      text: One image → many replicas → a load balancer in front. The core pattern behind every big site.
+
+quiz:
+  - question: What does a load balancer do?
+    options:
+      - Makes containers bigger
+      - Spreads incoming requests across multiple replicas
+      - Stores data
+      - Builds images
+    answer: 1
+    explanation: It's one entry point that distributes traffic over many identical container replicas.
+  - question: Why can any replica serve any request?
+    options:
+      - They share memory
+      - They're built from the same image — identical and stateless
+      - They take turns
+      - They're on one machine
+    answer: 1
+    explanation: Replicas run the same image, so they're interchangeable (keep state in a shared DB/volume, not the container).

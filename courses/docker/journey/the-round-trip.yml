@@ -1,0 +1,60 @@
+title: The response travels back
+summary: The return trip — how the answer gets back to the browser.
+minutes: 6
+difficulty: beginner
+order: 2
+
+scene:
+  widget: packetJourney
+  nodes:
+    - { id: app, logo: nodejs, label: App, sub: builds reply, x: 90, y: 52 }
+    - { id: container, logo: docker, label: Container, sub: ":3000", x: 68, y: 52 }
+    - { id: host, icon: server, label: Host, sub: ":443", x: 44, y: 52 }
+    - { id: you, icon: device-laptop, label: You, sub: renders it, x: 12, y: 52 }
+  path: [app, container, host, you]
+
+steps:
+  - kind: STEP
+    title: The app replies
+    label: Reply
+    body: >
+      Your app finishes its work and writes a **response** — an HTTP status, some
+      headers and a body (HTML or JSON). It hands that back out of the process.
+
+  - kind: STEP
+    title: Out through the container
+    label: Out
+    body: >
+      The response leaves the **container** on the same connection it came in on.
+      Docker's port mapping works both ways — the reply flows back through it to
+      the host.
+
+  - kind: STEP
+    title: Back across the network
+    label: Network
+    body: >
+      The **host** sends the response back across the internet to your machine, on
+      the very connection your browser opened.
+    callout:
+      kind: KEY IDEA
+      text: One connection, two directions. The request and its response share the same pipe.
+
+  - kind: STEP
+    title: The browser paints it
+    label: Render
+    body: >
+      Your **browser** receives the bytes and renders the page. The whole round
+      trip — often under a second — is what "loading a page" really is.
+    callout:
+      kind: BIG PICTURE
+      text: Browser → DNS → host → container → app → and all the way back. That's the web, containerised.
+
+quiz:
+  - question: How does the response get out of the container?
+    options:
+      - A new connection
+      - Back through the same port mapping the request came in on
+      - A volume
+      - It doesn't
+    answer: 1
+    explanation: The port mapping is bidirectional; the reply flows back over the same connection.
