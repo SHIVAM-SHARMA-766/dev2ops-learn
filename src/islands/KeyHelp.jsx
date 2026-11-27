@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 
 const KEYS = [
   ['← →', 'Previous / next step'],
+  ['[  ]', 'Previous / next lesson'],
   ['Space', 'Play / pause the lesson'],
   ['R', 'Replay from the start'],
   ['Ctrl K  /  /', 'Search all lessons'],

@@ -81,10 +81,12 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
       else if (e.key === 'ArrowLeft' || e.key === 'h') { e.preventDefault(); setPlaying(false); go((s) => s - 1); }
       else if (e.key === ' ') { e.preventDefault(); setPlaying((p) => !p); }
       else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); setPlaying(false); go(0); }
+      else if (e.key === ']' && next) { e.preventDefault(); window.location.href = next.path; }
+      else if (e.key === '[' && prev) { e.preventDefault(); window.location.href = prev.path; }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [go]);
+  }, [go, prev, next]);
 
   // auto-play: advance a step on a timer, stop at the end
   useEffect(() => {
@@ -280,7 +282,7 @@ export default function StepPlayer({ course, tree, lesson, prev, next }) {
             </button>
           )}
         </div>
-        <div className="rail__hint mono">← → step · space play/pause · click a step</div>
+        <div className="rail__hint mono">← → step · [ ] lesson · space play · ? help</div>
       </aside>
     </div>
   );

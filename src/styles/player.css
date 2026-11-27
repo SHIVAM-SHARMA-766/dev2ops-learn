@@ -647,3 +647,21 @@
   .stage__canvas { min-height: 300px; }
   .rail__scroll { max-height: none; }
 }
+
+/* phone polish */
+@media (max-width: 600px) {
+  .player__stage { padding: 14px 14px 0; }
+  .stage__head { flex-wrap: wrap; gap: 10px; }
+  .stage__title { font-size: 21px; }
+  .stage__meta { width: 100%; }
+  .stage__canvas { min-height: 260px; padding: 14px; }
+  .timeline__step { min-width: 56px; }
+  .timeline__text { max-width: 58px; font-size: 9.5px; }
+  .rail__scroll { padding: 18px 16px 8px; }
+  .rail__title { font-size: 18px; }
+  .rail__nav { padding: 10px 14px; }
+  .rail__nav .btn { padding: 10px 10px; font-size: 13px; }
+  .w-three, .w-journey { min-height: 260px; }
+  .three-legend { top: 8px; left: 8px; }
+  .three-leg { font-size: 11px; padding: 3px 8px; }
+}

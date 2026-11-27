@@ -38,7 +38,7 @@ const totalLessons = courses.reduce((n, c) => n + c.lessonCount, 0);
         const first = c.chapters.flatMap((ch) => ch.lessons)[0];
         const href = first ? first.path : `/${c.slug}`;
         return (
-          <a class="coursecard card" href={href} data-accent={c.accent}>
+          <a class="coursecard card" href={href} data-accent={c.accent} data-course={c.slug} data-total={c.lessonCount}>
             <div class="coursecard__top">
               <span class="coursecard__icon">{c.icon || '◆'}</span>
               {c.status !== 'published' && <span class="badge">draft</span>}
@@ -49,12 +49,38 @@ const totalLessons = courses.reduce((n, c) => n + c.lessonCount, 0);
               {c.level && <span class="badge badge--accent">{c.level}</span>}
               <span>{c.lessonCount} lessons</span>
             </div>
+            <div class="coursecard__progress" hidden>
+              <div class="coursecard__bar"><span></span></div>
+              <span class="coursecard__pct mono"></span>
+            </div>
             <span class="coursecard__cta mono">Start →</span>
           </a>
         );
       })}
     </div>
   </section>
+
+  <script is:inline>
+    (() => {
+      let data = {};
+      try { data = JSON.parse(localStorage.getItem('d2o-progress') || '{}'); } catch (e) {}
+      document.querySelectorAll('.coursecard').forEach((card) => {
+        const cp = data[card.dataset.course];
+        if (!cp || !cp.completed) return;
+        const done = Object.keys(cp.completed).length;
+        const total = parseInt(card.dataset.total || '0', 10);
+        if (!done || !total) return;
+        const pct = Math.round((done / total) * 100);
+        const prog = card.querySelector('.coursecard__progress');
+        prog.hidden = false;
+        prog.querySelector('.coursecard__bar span').style.width = pct + '%';
+        prog.querySelector('.coursecard__pct').textContent = pct + '%';
+        const cta = card.querySelector('.coursecard__cta');
+        cta.textContent = done >= total ? 'Review →' : 'Resume →';
+        if (cp.last) card.href = cp.last;
+      });
+    })();
+  </script>
 
   <!-- how it works -->
   <section class="how card" id="how">
@@ -98,6 +124,10 @@ const totalLessons = courses.reduce((n, c) => n + c.lessonCount, 0);
   .coursecard__title { font-size: 20px; margin: 4px 0 0; letter-spacing: -0.01em; }
   .coursecard__tagline { color: var(--ink-soft); font-size: 14px; margin: 0; flex: 1; }
   .coursecard__meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-faint); }
+  .coursecard__progress { display: flex; align-items: center; gap: 10px; }
+  .coursecard__bar { flex: 1; height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .coursecard__bar span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+  .coursecard__pct { font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
   .coursecard__cta { color: var(--accent); font-size: 14px; font-weight: 600; }
 
   .how { padding: 26px 28px; margin-bottom: 48px; }
