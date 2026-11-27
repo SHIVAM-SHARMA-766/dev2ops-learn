@@ -5,7 +5,7 @@ difficulty: advanced
 order: 4
 
 scene:
-  widget: layerStack
+  widget: layers3d
   caption: overlay2 stacks read-only lowerdirs under one writable upperdir, merged into one view.
   layers:
     - { label: lowerdir — base image, sub: read-only }

@@ -96,9 +96,9 @@
   display: flex; align-items: center; justify-content: center;
   padding: 24px;
   background:
-    var(--surface)
-    repeating-linear-gradient(0deg, transparent 0 23px, var(--line) 23px 24px),
-    repeating-linear-gradient(90deg, transparent 0 23px, var(--line) 23px 24px);
+    var(--canvas-bg)
+    repeating-linear-gradient(0deg, transparent 0 25px, var(--grid) 25px 26px),
+    repeating-linear-gradient(90deg, transparent 0 25px, var(--grid) 25px 26px);
   background-blend-mode: normal;
 }
 
@@ -491,10 +491,10 @@
 /* PacketJourney — travelling packet on an isometric grid */
 .w-journey {
   position: relative; width: 100%; height: 100%; min-height: 360px; border-radius: 12px;
-  background-color: var(--surface);
+  background-color: var(--canvas-bg);
   background-image:
-    repeating-linear-gradient(30deg, var(--line) 0 1px, transparent 1px 26px),
-    repeating-linear-gradient(-30deg, var(--line) 0 1px, transparent 1px 26px);
+    repeating-linear-gradient(30deg, var(--grid) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(-30deg, var(--grid) 0 1px, transparent 1px 26px);
   background-position: center;
   overflow: hidden;
 }

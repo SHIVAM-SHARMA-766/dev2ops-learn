@@ -47,8 +47,11 @@ export default function Layers3D({ layers = [], writable, activeStep = 0 }) {
     mount.appendChild(renderer.domElement);
 
     // lights
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 0.85));
-    const key = new THREE.DirectionalLight(0xffffff, 1.1);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 1.05));
+    const fill = new THREE.DirectionalLight(0xffffff, 0.5);
+    fill.position.set(-4, 2, 6);
+    scene.add(fill);
+    const key = new THREE.DirectionalLight(0xffffff, 1.15);
     key.position.set(5, 9, 4);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -75,7 +78,7 @@ export default function Layers3D({ layers = [], writable, activeStep = 0 }) {
     // build slabs
     const meshes = items.map((it, i) => {
       const geo = new THREE.BoxGeometry(slabW, slabH, slabD);
-      const shade = it.writable ? 0.55 : 0.1 + (i / Math.max(total - 1, 1)) * 0.45;
+      const shade = it.writable ? 0.58 : 0.24 + (i / Math.max(total - 1, 1)) * 0.4;
       const color = accent.clone().lerp(new THREE.Color(0xffffff), shade);
       const mat = new THREE.MeshStandardMaterial({
         color,
@@ -94,7 +97,7 @@ export default function Layers3D({ layers = [], writable, activeStep = 0 }) {
       // edge outline for definition
       const edges = new THREE.LineSegments(
         new THREE.EdgesGeometry(geo),
-        new THREE.LineBasicMaterial({ color: ink, transparent: true, opacity: 0.18 }),
+        new THREE.LineBasicMaterial({ color: ink, transparent: true, opacity: 0.3 }),
       );
       mesh.add(edges);
       return mesh;
